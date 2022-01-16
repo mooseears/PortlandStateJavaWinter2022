@@ -7,8 +7,15 @@ import java.util.ArrayList;
 /**                                                                                 
  * This class is represents a <code>Student</code>.                                 
  */                                                                                 
-public class Student extends Human {                                                
-                                                                                    
+public class Student extends Human {
+  static final String FEMALE_PRONOUN = "She";
+  static final String MALE_PRONOUN = "He";
+  static final String OTHER_PRONOUN = "They";
+  static final String FEMALE_GENDER = "female";
+  static final String MALE_GENDER = "male";
+  static final String OTHER_GENDER = "other";
+  private final String gender;
+
   /**                                                                               
    * Creates a new <code>Student</code>                                             
    *                                                                                
@@ -24,6 +31,7 @@ public class Student extends Human {
    */                                                                               
   public Student(String name, ArrayList<String> classes, double gpa, String gender) {
     super(name);
+    this.gender = gender;
   }
 
   /**                                                                               
@@ -39,7 +47,16 @@ public class Student extends Human {
    * <code>Student</code>.                                                          
    */                                                                               
   public String toString() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    switch (this.gender) {
+      case FEMALE_GENDER:
+        return FEMALE_PRONOUN;
+      case MALE_GENDER:
+        return MALE_PRONOUN;
+      case OTHER_GENDER:
+        return OTHER_PRONOUN;
+      default:
+        throw new UnsupportedOperationException("Gender " + this.gender + " not supported yet.");
+    }
   }
 
   /**
