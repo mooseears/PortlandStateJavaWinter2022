@@ -3,28 +3,47 @@ package edu.pdx.cs410J.jmeziere;
 import edu.pdx.cs410J.AbstractFlight;
 
 public class Flight extends AbstractFlight {
+  private int flightNumber;
+  private String src;
+  private String depart;
+  private String dest;
+  private String arrive;
+
+  public Flight(int flightNumber, String src, String depart, String dest, String arrive) {
+    this.flightNumber = flightNumber;
+    this.src = src;
+    this.depart = depart;
+    this.dest = dest;
+    this.arrive = arrive;
+  }
+
   @Override
   public int getNumber() {
-    return 42;
+    return this.flightNumber;
+    //return 42;
   }
 
   @Override
   public String getSource() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return this.src;
+    //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 
   @Override
   public String getDepartureString() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return this.depart;
+    //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 
   @Override
   public String getDestination() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return this.dest;
+    //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 
   @Override
   public String getArrivalString() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return this.arrive;
+    //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 }
