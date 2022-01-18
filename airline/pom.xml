@@ -4,6 +4,7 @@
     <artifactId>cs410j</artifactId>
     <groupId>io.github.davidwhitlock.cs410J</groupId>
     <version>2022.0.0</version>
+    <relativePath></relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.pdx.cs410J.jmeziere</groupId>
