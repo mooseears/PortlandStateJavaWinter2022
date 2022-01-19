@@ -3,7 +3,7 @@ package edu.pdx.cs410J.jmeziere;
 import java.io.*;
 
 /**
- * The main class for the CS410J airline Project
+ * The main class for the CS410J airline Project.
  */
 public class Project1 {
   private static final int MIN_ARGS = 6;
@@ -15,7 +15,6 @@ public class Project1 {
   private static final String ERR_FLIGHT_DEST = "Flight destination is invalid!";
   private static final String ERR_FLIGHT_DEPART = "Flight departure is invalid!";
   private static final String ERR_FLIGHT_ARRIVAL = "Flight arrival is invalid!";
-
 
   public static void main(String[] args) {
     boolean doReadme = false;
@@ -44,8 +43,8 @@ public class Project1 {
         String flightDestination = "";
         String flightArrival = "";
 
-        int currArg = 0;
-        if (doPrint) { currArg++; }
+        int currArg = 0; // Keeps track of which argument is being checked.
+        if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
 
         if (args[currArg].startsWith("\"")) {
           while (!args[currArg].endsWith("\"")) {
