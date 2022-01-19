@@ -1,36 +1,41 @@
 package edu.pdx.cs410J.jmeziere;
 
 import java.io.*;
-import java.util.Arrays;
 
 /**
  * The main class for the CS410J airline Project
  */
 public class Project1 {
   private static final int MIN_ARGS = 6;
+  private static final String ERR_MISSING_ARGS = "Missing command line arguments!";
+  private static final String ERR_EXTRA_ARGS = "There are extra command line arguments!";
+  private static final String ERR_AIRLINE = "Airline name is invalid!";
+  private static final String ERR_FLIGHT_NUM = "Flight number is invalid!";
+  private static final String ERR_FLIGHT_SRC = "Flight source is invalid!";
+  private static final String ERR_FLIGHT_DEST = "Flight destination is invalid!";
+  private static final String ERR_FLIGHT_DEPART = "Flight departure is invalid!";
+  private static final String ERR_FLIGHT_ARRIVAL = "Flight arrival is invalid!";
+
 
   public static void main(String[] args) {
+    boolean doReadme = false;
     boolean doPrint = false;
 
     if (args.length < 1) {
-      showErrorMissingArguments(args);
+      showErrorAndExit(args, ERR_MISSING_ARGS);
     }
 
     String flag = checkArgsForFlags(args);
-    switch (flag) {
-      case "r":
-        displayReadme();
-        break;
-      case "p":
-        doPrint = true;
-        //args = Arrays.copyOfRange(args, 1, args.length - 1);
-        break;
-      default:
+    if (flag.contains("r")) {
+      doReadme = true;
+      displayReadme();
+    } else if (flag.contains("p")) {
+      doPrint = true;
     }
 
-    if (!flag.equals("r")) {
+    if (!doReadme) {
       if (args.length < MIN_ARGS) {
-        showErrorMissingArguments(args);
+        showErrorAndExit(args, ERR_MISSING_ARGS);
       } else {
         String airlineName = "";
         int flightNumber = 0;
@@ -48,7 +53,7 @@ public class Project1 {
             if (currArg < args.length - 1) {
               currArg++;
             } else {
-              showErrorMissingArguments(args);
+              showErrorAndExit(args, ERR_MISSING_ARGS);
             }
           }
           airlineName += args[currArg];
@@ -58,12 +63,11 @@ public class Project1 {
         currArg++;
 
         if (currArg < args.length - 1) {
-          //try (Integer.parseInt(args[currArg])) {
+          if (args[currArg].matches("[0-9]{6}")) {
             flightNumber = (Integer.parseInt(args[currArg]));
-
-          //} catch (NumberFormatException e) {
-            //System.err.println("Flight number is invalid!");
-          //}
+          } else {
+            showErrorAndExit(args, ERR_FLIGHT_NUM);
+          }
         }
         currArg++;
 
@@ -71,7 +75,7 @@ public class Project1 {
           if (args[currArg].matches("(?i)[A-Z][A-Z][A-Z]")) {
             flightSource = args[currArg].toUpperCase();
           } else {
-            System.err.println("Flight source is invalid!");
+            showErrorAndExit(args, ERR_FLIGHT_SRC);
           }
         }
         currArg++;
@@ -81,7 +85,7 @@ public class Project1 {
           if (temp.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
             flightDeparture = temp;
           } else {
-            System.err.println("Flight departure is invalid!");
+            showErrorAndExit(args, ERR_FLIGHT_DEPART);
           }
         }
         currArg += 2;
@@ -90,7 +94,7 @@ public class Project1 {
           if (args[currArg].matches("(?i)[A-Z][A-Z][A-Z]")) {
             flightDestination = args[currArg].toUpperCase();
           } else {
-            System.err.println("Flight destination is invalid!");
+            showErrorAndExit(args, ERR_FLIGHT_DEST);
           }
         }
         currArg++;
@@ -100,13 +104,13 @@ public class Project1 {
           if (temp.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
             flightArrival = temp;
           } else {
-            System.err.println("Flight arrival is invalid!");
+            showErrorAndExit(args, ERR_FLIGHT_ARRIVAL);
           }
         }
         currArg += 2;
 
         if (currArg < args.length) {
-          System.err.println("Too many arguments!");
+          showErrorAndExit(args, ERR_EXTRA_ARGS);
         }
 
         Airline airline = new Airline(airlineName);
@@ -127,25 +131,54 @@ public class Project1 {
 
   private static String checkArgsForFlags(String[] args) {
     String flag = "";
-    if (args.length == 1) {
-      if (args[0].equalsIgnoreCase("-readme")) {
-        flag = "r";
-      } else if (args[0].equalsIgnoreCase("-print")) {
-        flag = "p";
-      }
-    } else {
-      if (args[0].equalsIgnoreCase("-readme") || args[1].equalsIgnoreCase("-readme")) {
-        flag = "r";
-      } else if (args[0].equalsIgnoreCase("-print") || args[1].equalsIgnoreCase("-print")) {
-        flag = "p";
+    for (String arg : args) {
+      if (arg != null && arg.startsWith("-")) {
+        switch (arg) {
+          case "-readme":
+          case "-README":
+          case "-r":
+            flag += "r";
+            break;
+          case "-print":
+          case "-p":
+            flag += "p";
+          default:
+        }
       }
     }
 
     return flag;
   }
 
-  private static void showErrorMissingArguments(String[] args) {
-    System.err.println("Missing command line arguments");
+  private static void showErrorAndExit(String[] args, String error) {
+    switch (error) {
+      case ERR_MISSING_ARGS:
+        System.err.println(ERR_MISSING_ARGS);
+        break;
+      case ERR_EXTRA_ARGS:
+        System.out.println(ERR_EXTRA_ARGS);
+        break;
+      case ERR_AIRLINE:
+        System.err.println(ERR_AIRLINE);
+        break;
+      case ERR_FLIGHT_NUM:
+        System.err.println(ERR_FLIGHT_NUM);
+        break;
+      case ERR_FLIGHT_SRC:
+        System.err.println(ERR_FLIGHT_SRC);
+        break;
+      case ERR_FLIGHT_DEPART:
+        System.err.println(ERR_FLIGHT_DEPART);
+        break;
+      case ERR_FLIGHT_DEST:
+        System.err.println(ERR_FLIGHT_DEST);
+        break;
+      case ERR_FLIGHT_ARRIVAL:
+        System.err.println(ERR_FLIGHT_ARRIVAL);
+        break;
+      default:
+    }
+
     for (String arg : args) {
       System.out.println(arg);
     }
