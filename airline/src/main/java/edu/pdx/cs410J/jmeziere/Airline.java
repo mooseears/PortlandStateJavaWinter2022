@@ -3,12 +3,15 @@ package edu.pdx.cs410J.jmeziere;
 import edu.pdx.cs410J.AbstractAirline;
 
 import java.util.Collection;
+import java.util.Vector;
 
 public class Airline extends AbstractAirline<Flight> {
   private final String name;
+  private Collection<Flight> flights;
 
   public Airline(String name) {
     this.name = name;
+    this.flights = new Vector<Flight>();
   }
 
   @Override
@@ -18,11 +21,14 @@ public class Airline extends AbstractAirline<Flight> {
 
   @Override
   public void addFlight(Flight flight) {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    this.flights.add(flight);
+    //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 
   @Override
   public Collection<Flight> getFlights() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return this.flights;
+    //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 }
+
