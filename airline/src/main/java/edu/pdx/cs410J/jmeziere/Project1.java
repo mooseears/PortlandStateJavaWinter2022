@@ -62,7 +62,7 @@ public class Project1 {
         currArg++;
 
         if (currArg < args.length - 1) {
-          if (args[currArg].matches("[0-9]{6}")) {
+          if (args[currArg].matches("[0-9][0-9]*[0-9]*[0-9]*[0-9]*[0-9]*")) {
             flightNumber = (Integer.parseInt(args[currArg]));
           } else {
             showErrorAndExit(args, ERR_FLIGHT_NUM);
