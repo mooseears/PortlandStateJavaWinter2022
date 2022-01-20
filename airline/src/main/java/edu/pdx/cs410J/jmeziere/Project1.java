@@ -46,6 +46,7 @@ public class Project1 {
         int currArg = 0; // Keeps track of which argument is being checked.
         if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
 
+        // Check if the airline name is multiple strings in quotes
         if (args[currArg].startsWith("\"")) {
           while (!args[currArg].endsWith("\"")) {
             airlineName += (args[currArg] + " ");
@@ -62,6 +63,7 @@ public class Project1 {
         currArg++;
 
         if (currArg < args.length - 1) {
+          // Make sure flightNumber is a string of 1-6 digits
           if (args[currArg].matches("[0-9]([0-9]?){5}")) {
             flightNumber = (Integer.parseInt(args[currArg]));
           } else {
@@ -71,6 +73,7 @@ public class Project1 {
         currArg++;
 
         if (currArg < args.length - 1) {
+          // Make sure flightSource is a string of 3 letters
           if (args[currArg].matches("(?i)[A-Z][A-Z][A-Z]")) {
             flightSource = args[currArg].toUpperCase();
           } else {
@@ -81,6 +84,7 @@ public class Project1 {
 
         if (currArg < args.length - 2) {
           String temp = args[currArg] + " " + args[currArg + 1];
+          // Make sure flightDeparture is a string formatted mm/dd/yyyy hh:mm
           if (temp.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
             flightDeparture = temp;
           } else {
@@ -90,6 +94,7 @@ public class Project1 {
         currArg += 2;
 
         if (currArg < args.length - 1) {
+          // Make sure flightDestination is a string of 3 letters
           if (args[currArg].matches("(?i)[A-Z][A-Z][A-Z]")) {
             flightDestination = args[currArg].toUpperCase();
           } else {
@@ -100,6 +105,7 @@ public class Project1 {
 
         if (currArg < args.length - 1) {
           String temp = args[currArg] + " " + args[currArg + 1];
+          // Make sure flightArrival is a string formatted mm/dd/yyyy hh:mm
           if (temp.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
             flightArrival = temp;
           } else {
@@ -108,6 +114,7 @@ public class Project1 {
         }
         currArg += 2;
 
+        // Check for extra arguments
         if (currArg < args.length) {
           showErrorAndExit(args, ERR_EXTRA_ARGS);
         }
@@ -116,6 +123,7 @@ public class Project1 {
         Flight flight = new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival);
         airline.addFlight(flight);
 
+        // Print out flight info if -print option is flagged
         if (doPrint) {
           for (Flight f : airline.getFlights()) {
             System.out.print(f);
@@ -128,6 +136,13 @@ public class Project1 {
     System.exit(0);
   }
 
+  /**
+   * Checks for options in the command line arguments
+   * @param args
+   *        A <code>String </code> <code>Array</code> of command line arguments
+   * @return flag
+   *        A string containing characters for each flag found in args
+   */
   private static String checkArgsForFlags(String[] args) {
     String flag = "";
     for (String arg : args) {
@@ -149,6 +164,13 @@ public class Project1 {
     return flag;
   }
 
+  /**
+   * Method for handling specific input errors
+   * @param args
+   *        A <code>String </code> <code>Array</code> of command line arguments
+   * @param error
+   *        A <code>String</code> containing the error to be shown.
+   */
   private static void showErrorAndExit(String[] args, String error) {
     switch (error) {
       case ERR_MISSING_ARGS:
@@ -184,6 +206,9 @@ public class Project1 {
     System.exit(1);
   }
 
+  /**
+   * Displays the contents of a readme file.
+   */
   private static void displayReadme() {
     try (InputStream readme = Project1.class.getResourceAsStream("README.txt")) {
       try (BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
