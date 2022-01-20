@@ -29,11 +29,17 @@ accordingly
   <packaging>pom</packaging>
     
   <name>PSUJavaWinter2022</name>
+<<<<<<< HEAD
     
   <description>Source code written in the Summer 2021 offering of Advanced Programming with Java</description>
     
   <url>http://muckuruxx.github.io/PortlandStateJavaWinter2022</url>
     
+=======
+  <description>Source code written in the Winter 2022 offering of Advanced Programming with Java</description>
+  <url>http://YourGitHubUser.github.io/PortlandStateJavaWinter2022</url>
+
+>>>>>>> a682474f4d30948d8c5c88d5aa866fbbc973346d
   <modules>
         
     <module>student</module>
