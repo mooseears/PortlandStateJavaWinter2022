@@ -13,18 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * You'll need to update these unit tests as you build out your program.
  */
 public class FlightTest {
-
-  /**
-   * This unit test will need to be modified (likely deleted) as you implement
-   * your project.
-   */
-  @Test
-  @Disabled
-  void getArrivalStringNeedsToBeImplemented() {
-    Flight flight = createTestFlight();
-    assertThrows(UnsupportedOperationException.class, flight::getArrivalString);
-  }
-
   Flight createTestFlight() {
     return new Flight(64, "PDX", "1/23/4567 12:34", "LAX", "2/11/4567 15:45");
   }
@@ -34,7 +22,6 @@ public class FlightTest {
    */
 
   @Test
-  @Disabled
   void forProject1ItIsOkayIfGetDepartureTimeReturnsNull() {
     Flight flight = createTestFlight();
     assertThat(flight.getDeparture(), is(nullValue()));
