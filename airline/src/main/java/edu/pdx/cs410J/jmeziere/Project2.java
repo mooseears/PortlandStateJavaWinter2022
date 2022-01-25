@@ -22,6 +22,8 @@ public class Project2 {
   public static void main(String[] args) {
     boolean doReadme = false;
     boolean doPrint = false;
+    boolean doReadFile = false;
+    boolean doWriteFile = false;
 
     if (args.length < 1) {
       showErrorAndExit(args, ERR_MISSING_ARGS);
@@ -31,10 +33,12 @@ public class Project2 {
     if (flag.contains("r")) {
       doReadme = true;
       displayReadme();
-    } else {
-      if (flag.contains("p")) {
+    }
+    if (flag.contains("p")) {
         doPrint = true;
-      }
+    }
+    if (flag.contains("f")) {
+
     }
 
     if (!doReadme) {
