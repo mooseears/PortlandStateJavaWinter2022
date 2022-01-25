@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 /**
  * The main class for the CS410J airline Project.
  */
-public class Project2 {
+public class Project1 {
   private static final int MIN_ARGS = 6;
   private static final String ERR_MISSING_ARGS = "Missing command line arguments!";
   private static final String ERR_EXTRA_ARGS = "There are extra command line arguments!";
@@ -22,8 +22,7 @@ public class Project2 {
   public static void main(String[] args) {
     boolean doReadme = false;
     boolean doPrint = false;
-    boolean doReadFile = false;
-    boolean doWriteFile = false;
+    boolean doParseFile = false;
 
     if (args.length < 1) {
       showErrorAndExit(args, ERR_MISSING_ARGS);
@@ -35,10 +34,10 @@ public class Project2 {
       displayReadme();
     }
     if (flag.contains("p")) {
-        doPrint = true;
+      doPrint = true;
     }
     if (flag.contains("f")) {
-
+      doParseFile = true;
     }
 
     if (!doReadme) {
@@ -51,9 +50,23 @@ public class Project2 {
         String flightDeparture = "";
         String flightDestination = "";
         String flightArrival = "";
+        String filePath = "";
 
+        // If file flag is enabled, check for text file
         int currArg = 0; // Keeps track of which argument is being checked.
+        if (doParseFile) {
+          while (args[currArg].startsWith("-")) {
+            if (args[currArg].equals("-textFile")) {
+              filePath = args[currArg + 1];
+            }
+            currArg++;
+          }
+          System.out.println("File path: " + filePath);
+        }
+
+        currArg = 0;
         if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
+        if (doParseFile) { currArg += 2; }
 
         // Check if the airline name is multiple strings in quotes
         if (args[currArg].startsWith("\"")) {
@@ -213,9 +226,6 @@ public class Project2 {
       default:
     }
 
-    for (String arg : args) {
-      System.out.println(arg);
-    }
     System.exit(1);
   }
 
@@ -223,7 +233,7 @@ public class Project2 {
    * Displays the contents of a readme file.
    */
   private static void displayReadme() {
-    try (InputStream readme = Project2.class.getResourceAsStream("README.txt")) {
+    try (InputStream readme = Project1.class.getResourceAsStream("README.txt")) {
       try (BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
         String line;
         while ((line = reader.readLine()) != null) {
