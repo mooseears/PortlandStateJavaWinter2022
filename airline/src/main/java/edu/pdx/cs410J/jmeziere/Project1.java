@@ -4,28 +4,37 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+
+class InvalidArgumentException extends Exception {
+  public InvalidArgumentException(String str) {
+    super(str);
+  }
+}
 
 /**
  * The main class for the CS410J airline Project.
  */
 public class Project1 {
-  private static final int MIN_ARGS = 6;
-  private static final String ERR_MISSING_ARGS = "Missing command line arguments!";
-  private static final String ERR_EXTRA_ARGS = "There are extra command line arguments!";
-  private static final String ERR_AIRLINE = "Airline name is invalid!";
-  private static final String ERR_FLIGHT_NUM = "Flight number is invalid!";
-  private static final String ERR_FLIGHT_SRC = "Flight source is invalid!";
-  private static final String ERR_FLIGHT_DEST = "Flight destination is invalid!";
-  private static final String ERR_FLIGHT_DEPART = "Flight departure is invalid!";
-  private static final String ERR_FLIGHT_ARRIVAL = "Flight arrival is invalid!";
+  static final int MIN_ARGS = 6;
+  static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
+          "\nUsage: [-options] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
+  static final String ERR_EXTRA_ARGS = "There are extra command line arguments: ";
+  static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits: ";
+  static final String ERR_AIRPORT_CODE = "Invalid airport code. Should be 3 letters: ";
+  static final String ERR_FLIGHT_TIME = "Invalid date and time. Should be mm/dd/yyy hh:mm : ";
 
   public static void main(String[] args) {
     boolean doReadme = false;
     boolean doPrint = false;
     boolean doParseFile = false;
 
-    if (args.length < 1) {
-      showErrorAndExit(args, ERR_MISSING_ARGS);
+    try { // Check for at least one argument
+      if (args.length < 1) {
+        throw new InvalidArgumentException(ERR_MISSING_ARGS);
+      }
+    } catch (InvalidArgumentException ex) {
+      System.err.println(ex.getMessage());
     }
 
     String flag = checkArgsForFlags(args);
@@ -41,117 +50,66 @@ public class Project1 {
     }
 
     if (!doReadme) {
-      if (args.length < MIN_ARGS) {
-        showErrorAndExit(args, ERR_MISSING_ARGS);
-      } else {
-        String airlineName = "";
-        int flightNumber = 0;
-        String flightSource = "";
-        String flightDeparture = "";
-        String flightDestination = "";
-        String flightArrival = "";
-        String filePath = "";
+      String airlineName = "";
+      int flightNumber = 0;
+      String flightSource = "";
+      String flightDeparture = "";
+      String flightDestination = "";
+      String flightArrival = "";
+      String filePath = "";
 
-        // If file flag is enabled, check for text file
-        int currArg = 0; // Keeps track of which argument is being checked.
-        if (doParseFile) {
-          while (args[currArg].startsWith("-")) {
-            if (args[currArg].equals("-textFile")) {
-              filePath = args[currArg + 1];
-            }
-            currArg++;
+      int currArg = 0; // Keeps track of which argument is being checked.
+      if (doParseFile) { // If file flag is enabled, check for text file
+        while (args[currArg].startsWith("-")) {
+          if (args[currArg].equals("-textFile")) {
+            filePath = args[currArg + 1];
           }
-          System.out.println("File path: " + filePath);
+          currArg++;
+        }
+        System.out.println("File path: " + filePath);
+      }
+
+      currArg = 0;
+      if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
+      if (doParseFile) { currArg += 2; } // If textFile flag enabled, start parsing at next argument
+
+      try {
+        // Make sure there are enough arguments to fulfill required parameters
+        if ((MIN_ARGS + currArg) >= args.length) {
+          throw new ArrayIndexOutOfBoundsException(ERR_MISSING_ARGS);
         }
 
-        currArg = 0;
-        if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
-        if (doParseFile) { currArg += 2; }
-
-        // Check if the airline name is multiple strings in quotes
-        if (args[currArg].startsWith("\"")) {
-          while (!args[currArg].endsWith("\"")) {
-            airlineName += (args[currArg] + " ");
-            if (currArg < args.length - 1) {
-              currArg++;
-            } else {
-              showErrorAndExit(args, ERR_MISSING_ARGS);
-            }
-          }
-          airlineName += args[currArg];
-        } else {
-          airlineName = args[currArg];
-        }
+        airlineName = getAirlineFromArgs(args[currArg]);
         currArg++;
-
-        if (currArg < args.length - 1) {
-          // Make sure flightNumber is a string of 1-6 digits
-          if (args[currArg].matches("[0-9]([0-9]?){5}")) {
-            flightNumber = (Integer.parseInt(args[currArg]));
-          } else {
-            showErrorAndExit(args, ERR_FLIGHT_NUM);
-          }
-        }
+        flightNumber = getFlightNumberFromArgs(args[currArg]);
         currArg++;
-
-        if (currArg < args.length - 1) {
-          // Make sure flightSource is a string of 3 letters
-          if (args[currArg].matches("(?i)[A-Z][A-Z][A-Z]")) {
-            flightSource = args[currArg].toUpperCase();
-          } else {
-            showErrorAndExit(args, ERR_FLIGHT_SRC);
-          }
-        }
+        flightSource = getAirportCodeFromArgs(args[currArg]);
         currArg++;
-
-        if (currArg < args.length - 2) {
-          String temp = args[currArg] + " " + args[currArg + 1];
-          // Make sure flightDeparture is a string formatted mm/dd/yyyy hh:mm
-          if (temp.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
-            flightDeparture = temp;
-          } else {
-            showErrorAndExit(args, ERR_FLIGHT_DEPART);
-          }
-        }
+        flightDeparture = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+2));
+        currArg += 2;
+        flightDestination = getAirportCodeFromArgs(args[currArg]);
+        currArg++;
+        flightArrival = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+2));
         currArg += 2;
 
-        if (currArg < args.length - 1) {
-          // Make sure flightDestination is a string of 3 letters
-          if (args[currArg].matches("(?i)[A-Z][A-Z][A-Z]")) {
-            flightDestination = args[currArg].toUpperCase();
-          } else {
-            showErrorAndExit(args, ERR_FLIGHT_DEST);
-          }
-        }
-        currArg++;
-
-        if (currArg < args.length - 1) {
-          String temp = args[currArg] + " " + args[currArg + 1];
-          // Make sure flightArrival is a string formatted mm/dd/yyyy hh:mm
-          if (temp.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
-            flightArrival = temp;
-          } else {
-            showErrorAndExit(args, ERR_FLIGHT_ARRIVAL);
-          }
-        }
-        currArg += 2;
-
-        // Check for extra arguments
         if (currArg < args.length) {
-          showErrorAndExit(args, ERR_EXTRA_ARGS);
+          throw new InvalidArgumentException(ERR_EXTRA_ARGS);
         }
 
-        Airline airline = new Airline(airlineName);
-        Flight flight = new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival);
-        airline.addFlight(flight);
+      } catch (InvalidArgumentException | ArrayIndexOutOfBoundsException ex) {
+        System.err.println(ex.getMessage());
+        System.exit(1);
+      }
 
-        // Print out flight info if -print option is flagged
-        if (doPrint) {
-          for (Flight f : airline.getFlights()) {
-            System.out.print(f);
-          }
+      Airline airline = new Airline(airlineName);
+      Flight flight = new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival);
+      airline.addFlight(flight);
+
+      // Print out flight info if -print option is flagged
+      if (doPrint) {
+        for (Flight f : airline.getFlights()) {
+          System.out.print(f);
         }
-
       }
     }
 
@@ -191,45 +149,6 @@ public class Project1 {
   }
 
   /**
-   * Method for handling specific input errors
-   * @param args
-   *        A <code>String </code> <code>Array</code> of command line arguments
-   * @param error
-   *        A <code>String</code> containing the error to be shown.
-   */
-  private static void showErrorAndExit(String[] args, String error) {
-    switch (error) {
-      case ERR_MISSING_ARGS:
-        System.err.println(ERR_MISSING_ARGS);
-        break;
-      case ERR_EXTRA_ARGS:
-        System.out.println(ERR_EXTRA_ARGS);
-        break;
-      case ERR_AIRLINE:
-        System.err.println(ERR_AIRLINE);
-        break;
-      case ERR_FLIGHT_NUM:
-        System.err.println(ERR_FLIGHT_NUM);
-        break;
-      case ERR_FLIGHT_SRC:
-        System.err.println(ERR_FLIGHT_SRC);
-        break;
-      case ERR_FLIGHT_DEPART:
-        System.err.println(ERR_FLIGHT_DEPART);
-        break;
-      case ERR_FLIGHT_DEST:
-        System.err.println(ERR_FLIGHT_DEST);
-        break;
-      case ERR_FLIGHT_ARRIVAL:
-        System.err.println(ERR_FLIGHT_ARRIVAL);
-        break;
-      default:
-    }
-
-    System.exit(1);
-  }
-
-  /**
    * Displays the contents of a readme file.
    */
   private static void displayReadme() {
@@ -246,6 +165,84 @@ public class Project1 {
     } catch (IOException e) {
       System.err.println("Readme file issue\n");
       System.exit(1);
+    }
+  }
+
+  /**
+   * Creates and returns a valid <code>String</code> for an <code>Airline</code> name.
+   * @param arg
+   *        A <code>String</code> input for the <code>Airline</code> name.
+   * @return
+   *        A <code>String</code> for the <code>Airline</code> name.
+   */
+  public static String getAirlineFromArgs(String arg) {
+    String airlineName = "";
+    // Check if the airline name is multiple strings in quotes
+    /*
+    if (args[currArg].startsWith("\"")) {
+      while (!args[currArg].endsWith("\"")) {
+        airlineName += (args[currArg] + " ");
+        if (currArg < args.length - 1) {
+          currArg++;
+        } else {
+          showErrorAndExit(args, ERR_MISSING_ARGS);
+        }
+      }
+      airlineName += args[currArg];
+    } else {
+    */
+      airlineName = arg;
+    //}
+
+    return airlineName;
+  }
+
+  /**
+   * Creates and returns a valid <code>int</code> for a <code>Flight</code> number.
+   * @param arg
+   *        A <code>String</code> input for the <code>Flight</code> number.
+   * @return
+   *        An <code>int</code> for the <code>Flight</code> number.
+   */
+  public static int getFlightNumberFromArgs(String arg) throws InvalidArgumentException {
+    // Make sure flightNumber is a string of 1-6 digits
+    if (arg.matches("[0-9]([0-9]?){5}")) {
+       return Integer.parseInt(arg);
+    } else {
+      throw new InvalidArgumentException(ERR_FLIGHT_NUM);
+    }
+  }
+
+  /**
+   * Checks and returns a valid <code>String</code> for a <code>Flight</code> airport code.
+   * @param arg
+   *        A <code>String</code> input for the <code>Flight</code> airport code.
+   * @return
+   *        A <code>String</code> for the <code>Flight</code> airport code.
+   */
+  public static String getAirportCodeFromArgs(String arg) throws InvalidArgumentException {
+    // Make sure flightSource is a string of 3 letters
+    if (arg.matches("(?i)[A-Z][A-Z][A-Z]")) {
+      return arg.toUpperCase();
+    } else {
+      throw new InvalidArgumentException(ERR_AIRPORT_CODE);
+    }
+  }
+
+  /**
+   * Checks and returns a valid <code>String</code> for a <code>Flight</code> date and time.
+   * @param args
+   *        A <code>String</code> <code>Array</code> input for the <code>Flight</code> date and time.
+   * @return
+   *        A <code>String</code> for the <code>Flight</code> date and time.
+   */
+  public static String getFlightDateFromArgs(String[] args) throws InvalidArgumentException {
+    String flightDeparture = args[0] + " " + args[1];
+    // Make sure flightDeparture is a string formatted mm/dd/yyyy hh:mm
+    if (flightDeparture.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
+      return flightDeparture;
+    } else {
+      throw new InvalidArgumentException(ERR_FLIGHT_TIME);
     }
   }
 }
