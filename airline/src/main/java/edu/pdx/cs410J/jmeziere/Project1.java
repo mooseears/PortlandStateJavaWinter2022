@@ -1,9 +1,11 @@
 package edu.pdx.cs410J.jmeziere;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import edu.pdx.cs410J.ParserException;
+import jdk.jshell.spi.ExecutionControl;
+
+import javax.swing.text.html.parser.Parser;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 class InvalidArgumentException extends Exception {
@@ -50,6 +52,7 @@ public class Project1 {
     }
 
     if (!doReadme) {
+      File airlineFile = null;
       String airlineName = "";
       int flightNumber = 0;
       String flightSource = "";
@@ -66,14 +69,24 @@ public class Project1 {
           }
           currArg++;
         }
-        System.out.println("File path: " + filePath);
+
+        airlineFile = new File(filePath);
+        try {
+          if (airlineFile.createNewFile()) {
+            System.out.println("Airline file created at " + airlineFile.getAbsolutePath());
+          }
+          doParseFile = true;
+        } catch (IOException ex) {
+          System.err.println("Could not create file at " + airlineFile.getAbsolutePath());
+          System.exit(1);
+        }
       }
 
       currArg = 0;
       if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
       if (doParseFile) { currArg += 2; } // If textFile flag enabled, start parsing at next argument
 
-      try {
+      try { // Get airline and flight info from command line
         // Make sure there are enough arguments to fulfill required parameters
         if ((MIN_ARGS + currArg) >= args.length) {
           throw new ArrayIndexOutOfBoundsException(ERR_MISSING_ARGS);
@@ -101,16 +114,45 @@ public class Project1 {
         System.exit(1);
       }
 
-      Airline airline = new Airline(airlineName);
+      // Create airline and flight
+      Airline airline = null;
+      if (doParseFile) { // Get airline and flight info from file
+        try {
+          TextParser parser = new TextParser(new BufferedReader(new FileReader(airlineFile)));
+          airline = parser.parse();
+          if (!airline.getName().equals(airlineName)) {
+            throw new InvalidArgumentException("Airline names do not match!");
+          }
+        } catch (IOException | ParserException ex) {
+          System.err.println("Could not read from file " + airlineFile.getAbsolutePath());
+          System.exit(1);
+        } catch (InvalidArgumentException ex) {
+          System.err.println(ex.getMessage());
+          System.exit(1);
+        }
+      } else {
+        airline = new Airline(airlineName);
+      }
+
       Flight flight = new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival);
       airline.addFlight(flight);
 
       // Print out flight info if -print option is flagged
       if (doPrint) {
         for (Flight f : airline.getFlights()) {
-          System.out.print(f);
+          System.out.println(f);
         }
       }
+
+      if (doParseFile) { // Write airline and flight info to file
+        try {
+          TextDumper dumper = new TextDumper(new BufferedWriter(new FileWriter(airlineFile)));
+          dumper.dump(airline);
+        } catch (IOException ex) {
+          System.err.println("Could not write to file " + airlineFile.getAbsolutePath());
+        }
+      }
+
     }
 
     System.exit(0);

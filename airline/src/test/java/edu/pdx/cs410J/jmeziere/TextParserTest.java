@@ -3,8 +3,9 @@ package edu.pdx.cs410J.jmeziere;
 import edu.pdx.cs410J.ParserException;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

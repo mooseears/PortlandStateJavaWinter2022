@@ -22,12 +22,22 @@ public class TextParser implements AirlineParser<Airline> {
     ) {
 
       String airlineName = br.readLine();
-
       if (airlineName == null) {
         throw new ParserException("Missing airline name");
       }
+      Airline airline = new Airline(airlineName);
 
-      return new Airline(airlineName);
+      String line;
+      while ((line = br.readLine()) != null) {
+        int flightNumber = Integer.parseInt(line);
+        String flightSource = br.readLine();
+        String flightDeparture = br.readLine();
+        String flightDestination = br.readLine();
+        String flightArrival = br.readLine();
+        airline.addFlight(new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival));
+      }
+
+      return airline;
 
     } catch (IOException e) {
       throw new ParserException("While parsing airline text", e);
