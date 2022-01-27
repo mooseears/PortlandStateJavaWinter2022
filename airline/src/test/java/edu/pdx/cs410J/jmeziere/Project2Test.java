@@ -1,14 +1,13 @@
 package edu.pdx.cs410J.jmeziere;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 
-import static edu.pdx.cs410J.jmeziere.Project1.*;
+import static edu.pdx.cs410J.jmeziere.Project2.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,16 +15,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * A unit test for code in the <code>Project1</code> class.  This is different
- * from <code>Project1IT</code> which is an integration test and can handle the calls
+ * A unit test for code in the <code>Project2</code> class.  This is different
+ * from <code>Project2IT</code> which is an integration test and can handle the calls
  * to {@link System#exit(int)} and the like.
  */
-class Project1Test {
+class Project2Test {
 
   @Test
   void readmeCanBeReadAsResource() throws IOException {
     try (
-      InputStream readme = Project1.class.getResourceAsStream("README.txt")
+      InputStream readme = Project2.class.getResourceAsStream("README.txt")
     ) {
       assertThat(readme, not(nullValue()));
       BufferedReader reader = new BufferedReader(new InputStreamReader(readme));
@@ -159,7 +158,7 @@ class Project1Test {
   @Test
   void checkIfFileAlreadyExistsReturnsTrue() {
     try {
-      URL resource = Project1.class.getResource("valid-airline.txt");
+      URL resource = Project2.class.getResource("valid-airline.txt");
       String filePath = Paths.get(resource.toURI().getPath()).toString();
       assertThat(checkIfFileAlreadyExists(filePath), is(true));
     } catch (URISyntaxException | InvalidArgumentException ex) {

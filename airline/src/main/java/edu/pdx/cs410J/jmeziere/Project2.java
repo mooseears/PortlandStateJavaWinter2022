@@ -1,11 +1,8 @@
 package edu.pdx.cs410J.jmeziere;
 
 import edu.pdx.cs410J.ParserException;
-import jdk.jshell.spi.ExecutionControl;
 
-import javax.swing.text.html.parser.Parser;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.Arrays;
 
 class InvalidArgumentException extends Exception {
@@ -17,7 +14,7 @@ class InvalidArgumentException extends Exception {
 /**
  * The main class for the CS410J airline Project.
  */
-public class Project1 {
+public class Project2 {
   static final int MIN_ARGS = 6;
   static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
           "\nUsage: [-print] [-readme] [-textFile filepath] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
@@ -185,7 +182,7 @@ public class Project1 {
    * Displays the contents of a readme file.
    */
   private static void displayReadme() {
-    try (InputStream readme = Project1.class.getResourceAsStream("README.txt")) {
+    try (InputStream readme = Project2.class.getResourceAsStream("README.txt")) {
       try (BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
         String line;
         while ((line = reader.readLine()) != null) {
