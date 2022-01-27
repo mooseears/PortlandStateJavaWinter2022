@@ -15,6 +15,8 @@ java -jar target/airline-2022.0.0.jar -options airline_name flight_number depart
 		Print out the flight information after program execution.
 	-readme
 		Display this readme. This option will not execute the rest of the program.
+    -textFile filepath
+        Creates airline and flights from existing file or creates a new file and adds airline and flights to it.
 
 arguments:
 

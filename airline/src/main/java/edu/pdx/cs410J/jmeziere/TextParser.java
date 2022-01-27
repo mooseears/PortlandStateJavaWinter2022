@@ -3,6 +3,7 @@ package edu.pdx.cs410J.jmeziere;
 import edu.pdx.cs410J.AirlineParser;
 import edu.pdx.cs410J.ParserException;
 
+import javax.swing.text.html.parser.Parser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,11 +31,15 @@ public class TextParser implements AirlineParser<Airline> {
       String line;
       while ((line = br.readLine()) != null) {
         int flightNumber = Integer.parseInt(line);
-        String flightSource = br.readLine();
-        String flightDeparture = br.readLine();
-        String flightDestination = br.readLine();
-        String flightArrival = br.readLine();
-        airline.addFlight(new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival));
+        try {
+          String flightSource = br.readLine();
+          String flightDeparture = br.readLine();
+          String flightDestination = br.readLine();
+          String flightArrival = br.readLine();
+          airline.addFlight(new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival));
+        } catch (IOException ex) {
+          throw new ParserException("Cannot read from file. Flight input is incomplete.");
+        }
       }
 
       return airline;

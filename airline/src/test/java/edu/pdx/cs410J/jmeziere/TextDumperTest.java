@@ -38,4 +38,5 @@ public class TextDumperTest {
     Airline read = parser.parse();
     assertThat(read.getName(), equalTo(airlineName));
   }
+
 }

@@ -3,10 +3,10 @@ package edu.pdx.cs410J.jmeziere;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 
 import static edu.pdx.cs410J.jmeziere.Project1.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -46,25 +46,25 @@ class Project1Test {
     try {
       assertThat(getFlightNumberFromArgs(validNum),  equalTo(123456));
     } catch (Exception e) {
-      System.out.println(e);
+      System.err.println(e.getMessage());
     }
   }
 
   @Test
   void getFlightNumberFromArgsNumberTooLong() {
     String invalidNum = "1234567";
-    Exception exception = assertThrows(InvalidArgumentException.class, () -> {
-      getFlightNumberFromArgs(invalidNum);
-    });
+    Exception exception = assertThrows(InvalidArgumentException.class, () ->
+      getFlightNumberFromArgs(invalidNum)
+    );
     assertTrue(exception.getMessage().contains(ERR_FLIGHT_NUM));
   }
 
   @Test
   void getFlightNumberFromArgsNotANumber() {
     String invalidNum = "ABDCE";
-    Exception exception = assertThrows(InvalidArgumentException.class, () -> {
-      getFlightNumberFromArgs(invalidNum);
-    });
+    Exception exception = assertThrows(InvalidArgumentException.class, () ->
+      getFlightNumberFromArgs(invalidNum)
+    );
     assertTrue(exception.getMessage().contains(ERR_FLIGHT_NUM));
   }
 
@@ -74,25 +74,25 @@ class Project1Test {
     try {
       assertThat(getAirportCodeFromArgs(validCode),  equalTo("PDX"));
     } catch (Exception e) {
-      System.out.println(e);
+      System.err.println(e.getMessage());
     }
   }
 
   @Test
   void getAirportCodeFromInvalidStringThrowsException() {
     String invalidCode = "1234567";
-    Exception exception = assertThrows(InvalidArgumentException.class, () -> {
-      getAirportCodeFromArgs(invalidCode);
-    });
+    Exception exception = assertThrows(InvalidArgumentException.class, () ->
+      getAirportCodeFromArgs(invalidCode)
+    );
     assertTrue(exception.getMessage().contains(ERR_AIRPORT_CODE));
   }
 
   @Test
   void getAirportCodeFromShortStringThrowsException() {
     String invalidCode = "PD";
-    Exception exception = assertThrows(InvalidArgumentException.class, () -> {
-      getAirportCodeFromArgs(invalidCode);
-    });
+    Exception exception = assertThrows(InvalidArgumentException.class, () ->
+      getAirportCodeFromArgs(invalidCode)
+    );
     assertTrue(exception.getMessage().contains(ERR_AIRPORT_CODE));
   }
 
@@ -102,17 +102,69 @@ class Project1Test {
     try {
       assertThat(getFlightDateFromArgs(validDate),  equalTo("1/11/2002 12:34"));
     } catch (Exception e) {
-      System.out.println(e);
+      System.out.println(e.getMessage());
     }
   }
 
   @Test
   void getFlightDateFromInvalidInputsThrowsException() {
     String[] invalidDate = { "165/11/2002", "12:34" };
-    Exception exception = assertThrows(InvalidArgumentException.class, () -> {
-      getFlightDateFromArgs(invalidDate);
-    });
+    Exception exception = assertThrows(InvalidArgumentException.class, () ->
+            getFlightDateFromArgs(invalidDate));
     assertTrue(exception.getMessage().contains(ERR_FLIGHT_TIME));
   }
 
+  @Test
+  void checkArgsForFlagsFindsAllFlagsFileFirst() {
+    String[] args = { "-textFile", "./airline-test.txt", "-print", "-readme" };
+    assertTrue(checkArgsForFlags(args).contains("fpr"));
+  }
+
+  @Test
+  void checkArgsForFlagsFindsAllFlagsPrintFirst() {
+    String[] args = { "-print", "-textFile", "./airline-test.txt", "-readme" };
+    assertTrue(checkArgsForFlags(args).contains("pfr"));
+  }
+
+  @Test
+  void checkArgsForFlagsFindsAllFlagsReadmeFirst() {
+    String[] args = { "-readme", "-print", "-textFile", "./airline-test.txt" };
+    assertTrue(checkArgsForFlags(args).contains("rpf"));
+  }
+
+  @Test
+  void checkArgsForFlagsFindsTwoFlags() {
+    String[] args = { "-readme", "-textFile", "./airline-test.txt" };
+    assertTrue(checkArgsForFlags(args).contains("rf"));
+  }
+
+  @Test
+  void getFilePathFromArgsFindFilePath() {
+    String[] args = { "-readme", "-textFile", "./airline-test.txt" };
+    try {
+      assertTrue(getFilePathFromArgs(args).contains("./airline-test.txt"));
+    } catch (InvalidArgumentException ex){
+      System.err.println(ex.getMessage());
+    }
+  }
+
+  @Test
+  void getFilePathFromArgsThrowsExceptionWhenNoArgument() {
+    String[] args = { "-readme", "-textFile" };
+    assertThrows(InvalidArgumentException.class, () ->
+      getFilePathFromArgs(args)
+    );
+  }
+
+  @Test
+  void checkIfFileAlreadyExistsReturnsTrue() {
+    try {
+      URL resource = Project1.class.getResource("valid-airline.txt");
+      String filePath = Paths.get(resource.toURI().getPath()).toString();
+      assertThat(checkIfFileAlreadyExists(filePath), is(true));
+    } catch (URISyntaxException | InvalidArgumentException ex) {
+      System.err.println(ex.getMessage());
+    }
+
+  }
 }

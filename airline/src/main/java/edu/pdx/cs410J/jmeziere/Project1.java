@@ -20,7 +20,7 @@ class InvalidArgumentException extends Exception {
 public class Project1 {
   static final int MIN_ARGS = 6;
   static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
-          "\nUsage: [-options] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
+          "\nUsage: [-print] [-readme] [-textFile filepath] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
   static final String ERR_EXTRA_ARGS = "There are extra command line arguments: ";
   static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits: ";
   static final String ERR_AIRPORT_CODE = "Invalid airport code. Should be 3 letters: ";
@@ -29,7 +29,8 @@ public class Project1 {
   public static void main(String[] args) {
     boolean doReadme = false;
     boolean doPrint = false;
-    boolean doParseFile = false;
+    boolean doCheckFile = false;
+    boolean doReadFile = false;
 
     try { // Check for at least one argument
       if (args.length < 1) {
@@ -48,7 +49,7 @@ public class Project1 {
       doPrint = true;
     }
     if (flag.contains("f")) {
-      doParseFile = true;
+      doCheckFile = true;
     }
 
     if (!doReadme) {
@@ -62,29 +63,19 @@ public class Project1 {
       String filePath = "";
 
       int currArg = 0; // Keeps track of which argument is being checked.
-      if (doParseFile) { // If file flag is enabled, check for text file
-        while (args[currArg].startsWith("-")) {
-          if (args[currArg].equals("-textFile")) {
-            filePath = args[currArg + 1];
-          }
-          currArg++;
-        }
-
-        airlineFile = new File(filePath);
+      if (doCheckFile) { // If file flag is enabled, check for text file
         try {
-          if (airlineFile.createNewFile()) {
-            System.out.println("Airline file created at " + airlineFile.getAbsolutePath());
-          }
-          doParseFile = true;
-        } catch (IOException ex) {
-          System.err.println("Could not create file at " + airlineFile.getAbsolutePath());
+          filePath = getFilePathFromArgs(args);
+          doReadFile = checkIfFileAlreadyExists(filePath);
+        } catch (InvalidArgumentException ex) {
+          System.err.println(ex.getMessage());
           System.exit(1);
         }
+        airlineFile = new File(filePath);
       }
 
-      currArg = 0;
       if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
-      if (doParseFile) { currArg += 2; } // If textFile flag enabled, start parsing at next argument
+      if (doCheckFile) { currArg += 2; } // If textFile flag enabled, start parsing at next argument
 
       try { // Get airline and flight info from command line
         // Make sure there are enough arguments to fulfill required parameters
@@ -116,7 +107,7 @@ public class Project1 {
 
       // Create airline and flight
       Airline airline = null;
-      if (doParseFile) { // Get airline and flight info from file
+      if (doReadFile) { // Get airline and flight info from file
         try {
           TextParser parser = new TextParser(new BufferedReader(new FileReader(airlineFile)));
           airline = parser.parse();
@@ -124,7 +115,7 @@ public class Project1 {
             throw new InvalidArgumentException("Airline names do not match!");
           }
         } catch (IOException | ParserException ex) {
-          System.err.println("Could not read from file " + airlineFile.getAbsolutePath());
+          System.err.println(ex.getMessage() + ": " + airlineFile.getAbsolutePath());
           System.exit(1);
         } catch (InvalidArgumentException ex) {
           System.err.println(ex.getMessage());
@@ -144,7 +135,7 @@ public class Project1 {
         }
       }
 
-      if (doParseFile) { // Write airline and flight info to file
+      if (doCheckFile) { // Write airline and flight info to file
         try {
           TextDumper dumper = new TextDumper(new BufferedWriter(new FileWriter(airlineFile)));
           dumper.dump(airline);
@@ -165,7 +156,7 @@ public class Project1 {
    * @return flag
    *        A string containing characters for each flag found in args
    */
-  private static String checkArgsForFlags(String[] args) {
+  public static String checkArgsForFlags(String[] args) {
     String flag = "";
     for (String arg : args) {
       if (arg != null && arg.startsWith("-")) {
@@ -210,6 +201,55 @@ public class Project1 {
     }
   }
 
+  /**
+   *
+   * @param args
+   *        A <code>String</code> <code>Array</code> of command line arguments.
+   * @return
+   *        The filepath as a <code>String</code>.
+   * @throws InvalidArgumentException
+   *        If filepath cannot be found in args
+   */
+  public static String getFilePathFromArgs(String[] args) throws InvalidArgumentException {
+    String filePath = "";
+    int currArg = 0;
+    while (currArg < args.length && args[currArg].startsWith("-")) {
+      if (args[currArg].equals("-textFile") && currArg+1 < args.length) {
+        filePath = args[currArg + 1];
+      }
+      currArg++;
+    }
+    if (filePath.equals("")) {
+      throw new InvalidArgumentException(ERR_MISSING_ARGS + " Could not find filepath!");
+    } else {
+      return filePath;
+    }
+  }
+
+  /**
+   * Checks if the chosen file exists and creates it if not.
+   * @param filePath
+   *        Location of file
+   * @return
+   *        Returns a <code>boolean</code>. True if file does already exist, False if not.
+   * @throws InvalidArgumentException
+   *        If file cannot be opened, read, or created.
+   */
+  public static boolean checkIfFileAlreadyExists(String filePath) throws InvalidArgumentException {
+    File airlineFile = null;
+    try {
+      airlineFile = new File(filePath);
+
+      if (airlineFile.createNewFile()) {
+        System.out.println("Airline file created at " + airlineFile.getAbsolutePath());
+        return false;
+      }
+    } catch (IOException ex) {
+      throw new InvalidArgumentException("Could not create file at " + airlineFile.getAbsolutePath());
+    }
+
+    return true;
+  }
   /**
    * Creates and returns a valid <code>String</code> for an <code>Airline</code> name.
    * @param arg
