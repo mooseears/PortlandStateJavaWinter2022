@@ -318,7 +318,7 @@ public class Project2 {
   public static String getFlightDateFromArgs(String[] args) throws InvalidArgumentException {
     String flightDeparture = args[0] + " " + args[1];
     // Make sure flightDeparture is a string formatted mm/dd/yyyy hh:mm
-    if (flightDeparture.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [1-2]?[0-9]:[0-5][0-9]")) {
+    if (flightDeparture.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [0-2]?[0-9]:[0-5][0-9]")) {
       return flightDeparture;
     } else {
       throw new InvalidArgumentException(ERR_FLIGHT_TIME);

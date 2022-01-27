@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import static edu.pdx.cs410J.jmeziere.Project2.*;
+
 public class TextParser implements AirlineParser<Airline> {
   private final Reader reader;
 
@@ -30,15 +32,15 @@ public class TextParser implements AirlineParser<Airline> {
 
       String line;
       while ((line = br.readLine()) != null) {
-        int flightNumber = Integer.parseInt(line);
         try {
-          String flightSource = br.readLine();
-          String flightDeparture = br.readLine();
-          String flightDestination = br.readLine();
-          String flightArrival = br.readLine();
+          int flightNumber = getFlightNumberFromArgs(line);
+          String flightSource = getAirportCodeFromArgs(br.readLine());
+          String flightDeparture = getFlightDateFromArgs(br.readLine().split(" "));
+          String flightDestination = getAirportCodeFromArgs(br.readLine());
+          String flightArrival = getFlightDateFromArgs(br.readLine().split(" "));
           airline.addFlight(new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival));
-        } catch (IOException ex) {
-          throw new ParserException("Cannot read from file. Flight input is incomplete.");
+        } catch (IOException | InvalidArgumentException ex) {
+          throw new ParserException("Cannot read from file.");
         }
       }
 
