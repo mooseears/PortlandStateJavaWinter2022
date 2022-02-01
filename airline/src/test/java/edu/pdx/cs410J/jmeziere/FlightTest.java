@@ -3,6 +3,9 @@ package edu.pdx.cs410J.jmeziere;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,17 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class FlightTest {
   Flight createTestFlight() {
-    return new Flight(64, "PDX", "1/23/4567 12:34", "LAX", "2/11/4567 15:45");
-  }
-  /**
-   * This unit test will need to be modified (likely deleted) as you implement
-   * your project.
-   */
-
-  @Test
-  void forProject1ItIsOkayIfGetDepartureTimeReturnsNull() {
-    Flight flight = createTestFlight();
-    assertThat(flight.getDeparture(), is(nullValue()));
+    Flight flight = null;
+    try {
+      flight = new Flight(64, "PDX", new SimpleDateFormat("MM/dd/yyyy hh:mm aa").parse("1/23/4567 12:34 pm"), "LAX", new SimpleDateFormat("MM/dd/yyyy hh:mm aa").parse("2/11/4567 3:45 pm"));
+    } catch (ParseException ex) {
+      System.err.println(ex.getMessage());
+    }
+    return flight;
   }
 
   @Test
@@ -42,7 +41,7 @@ public class FlightTest {
   @Test
   void getDepartureStringReturnsDateAndTimeString() {
     Flight flight = createTestFlight();
-    assertThat(flight.getDepartureString(), is("1/23/4567 12:34"));
+    assertThat(flight.getDepartureString(), is("01/23/4567 12:34 PM"));
   }
 
   @Test
@@ -54,6 +53,6 @@ public class FlightTest {
   @Test
   void getArrivalStringReturnsDateAndTimeString() {
     Flight flight = createTestFlight();
-    assertThat(flight.getArrivalString(), is("2/11/4567 15:45"));
+    assertThat(flight.getArrivalString(), is("02/11/4567 03:45 PM"));
   }
 }

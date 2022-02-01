@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Date;
 
 import static edu.pdx.cs410J.jmeziere.Project2.*;
 
@@ -35,9 +36,9 @@ public class TextParser implements AirlineParser<Airline> {
         try {
           int flightNumber = getFlightNumberFromArgs(line);
           String flightSource = getAirportCodeFromArgs(br.readLine());
-          String flightDeparture = getFlightDateFromArgs(br.readLine().split(" "));
+          Date flightDeparture = getFlightDateFromArgs(br.readLine().split(" "));
           String flightDestination = getAirportCodeFromArgs(br.readLine());
-          String flightArrival = getFlightDateFromArgs(br.readLine().split(" "));
+          Date flightArrival = getFlightDateFromArgs(br.readLine().split(" "));
           airline.addFlight(new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival));
         } catch (IOException | InvalidArgumentException ex) {
           throw new ParserException("Cannot read from file.");

@@ -2,7 +2,9 @@ package edu.pdx.cs410J.jmeziere;
 
 import edu.pdx.cs410J.AbstractAirline;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -10,7 +12,7 @@ import java.util.Vector;
  */
 public class Airline extends AbstractAirline<Flight> {
   private final String name;
-  private Collection<Flight> flights;
+  private ArrayList<Flight> flightList;
 
   /**
    * Creates a new <code>Airline</code>
@@ -19,7 +21,7 @@ public class Airline extends AbstractAirline<Flight> {
    */
   public Airline(String name) {
     this.name = name;
-    this.flights = new Vector<Flight>();
+    this.flightList = new ArrayList<>();
   }
 
   /**
@@ -38,7 +40,17 @@ public class Airline extends AbstractAirline<Flight> {
    */
   @Override
   public void addFlight(Flight flight) {
-    this.flights.add(flight);
+    if (flightList.isEmpty()) {
+      flightList.add(flight);
+    } else {
+      for (Flight f : flightList) {
+        if (flight.compareTo(f) < 0) {
+          flightList.add(flightList.indexOf(f), flight);
+          return;
+        }
+      }
+      flightList.add(flight);
+    }
   }
 
   /**
@@ -47,7 +59,7 @@ public class Airline extends AbstractAirline<Flight> {
    */
   @Override
   public Collection<Flight> getFlights() {
-    return this.flights;
+    return this.flightList;
     //throw new UnsupportedOperationException("This method is not implemented yet");
   }
 }

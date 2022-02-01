@@ -3,6 +3,9 @@ package edu.pdx.cs410J.jmeziere;
 import edu.pdx.cs410J.ParserException;
 
 import java.io.*;
+import java.text.ParseException;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 class InvalidArgumentException extends Exception {
@@ -15,19 +18,26 @@ class InvalidArgumentException extends Exception {
  * The main class for the CS410J airline Project.
  */
 public class Project2 {
-  static final int MIN_ARGS = 6;
+  static final int MIN_ARGS = 8;
   static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
-          "\nUsage: [-print] [-readme] [-textFile filepath] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
+          "\nUsage: [-print] [-readme] [-textFile filepath] [-pretty (filepath|-)] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
   static final String ERR_EXTRA_ARGS = "There are extra command line arguments: ";
   static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits: ";
-  static final String ERR_AIRPORT_CODE = "Invalid airport code. Should be 3 letters: ";
-  static final String ERR_FLIGHT_TIME = "Invalid date and time. Should be mm/dd/yyy hh:mm : ";
+  static final String ERR_INVALID_AIRPORT_CODE = "Invalid airport code. Should be 3 letters: ";
+  static final String ERR_AIRPORT_CODE_NOT_FOUND = "Invalid airport code. Airport code unknown: ";
+  static final String ERR_FLIGHT_TIME_FORMAT = "Invalid date and time. Should be mm/dd/yyy hh:mm am/pm: ";
+  static final String ERR_FLIGHT_TIME_PARADOX = "Invalid departure and arrival times. Arrival cannot happen before departure";
+  static final String TEXT_FILE_FLAG = "-textFile";
+  static final String PRETTY_PRINT_FLAG = "-pretty";
+  static final String PRINT_FLIGHT_FLAG = "-print";
+  static final String README_FLAG = "-readme";
 
   public static void main(String[] args) {
     boolean doReadme = false;
     boolean doPrint = false;
     boolean doCheckFile = false;
     boolean doReadFile = false;
+    boolean doPrettyPrint = false;
 
     try { // Check for at least one argument
       if (args.length < 1) {
@@ -48,31 +58,35 @@ public class Project2 {
     if (flag.contains("f")) {
       doCheckFile = true;
     }
+    if (flag.contains("b")) { // beauty?
+      doPrettyPrint = true;
+    }
 
     if (!doReadme) {
       File airlineFile = null;
       String airlineName = "";
       int flightNumber = 0;
       String flightSource = "";
-      String flightDeparture = "";
+      Date flightDeparture = null;
       String flightDestination = "";
-      String flightArrival = "";
-      String filePath = "";
+      Date flightArrival = null;
+      String textFilePath = "";
 
       int currArg = 0; // Keeps track of which argument is being checked.
-      if (doCheckFile) { // If file flag is enabled, check for text file
+      if (doCheckFile) { // If textFile flag is enabled, check for text file
         try {
-          filePath = getFilePathFromArgs(args);
-          doReadFile = checkIfFileAlreadyExists(filePath);
+          textFilePath = getFilePathFromArgs(args, TEXT_FILE_FLAG);
+          doReadFile = checkIfFileAlreadyExists(textFilePath);
         } catch (InvalidArgumentException ex) {
           System.err.println(ex.getMessage());
           System.exit(1);
         }
-        airlineFile = new File(filePath);
+        airlineFile = new File(textFilePath);
       }
 
       if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
-      if (doCheckFile) { currArg += 2; } // If textFile flag enabled, start parsing at next argument
+      if (doCheckFile) { currArg += 2; } // If textFile flag enabled, start parsing at next next argument
+      if (doPrettyPrint) { currArg += 2; } // If pretty printing, start parsing at next next argument
 
       try { // Get airline and flight info from command line
         // Make sure there are enough arguments to fulfill required parameters
@@ -86,12 +100,16 @@ public class Project2 {
         currArg++;
         flightSource = getAirportCodeFromArgs(args[currArg]);
         currArg++;
-        flightDeparture = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+2));
-        currArg += 2;
+        flightDeparture = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+3));
+        currArg += 3;
         flightDestination = getAirportCodeFromArgs(args[currArg]);
         currArg++;
-        flightArrival = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+2));
-        currArg += 2;
+        flightArrival = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+3));
+        currArg += 3;
+
+        if (flightDeparture.compareTo(flightArrival) >= 0) {
+          throw new InvalidArgumentException(ERR_FLIGHT_TIME_PARADOX);
+        }
 
         if (currArg < args.length) {
           throw new InvalidArgumentException(ERR_EXTRA_ARGS);
@@ -125,14 +143,14 @@ public class Project2 {
       Flight flight = new Flight(flightNumber, flightSource, flightDeparture, flightDestination, flightArrival);
       airline.addFlight(flight);
 
-      // Print out flight info if -print option is flagged
-      if (doPrint) {
-        for (Flight f : airline.getFlights()) {
-          System.out.println(f);
-        }
-      }
+      // Print out flight info if flagged
+      if (doPrint) { System.out.println(flight); }
 
-      if (doCheckFile) { // Write airline and flight info to file
+      // Pretty print airline info if flagged
+      if (doPrettyPrint) { PrettyPrint(args, airline); }
+
+      // Write airline and flight info to file
+      if (doCheckFile) {
         try {
           TextDumper dumper = new TextDumper(new BufferedWriter(new FileWriter(airlineFile)));
           dumper.dump(airline);
@@ -140,9 +158,7 @@ public class Project2 {
           System.err.println("Could not write to file " + airlineFile.getAbsolutePath());
         }
       }
-
     }
-
     System.exit(0);
   }
 
@@ -158,23 +174,21 @@ public class Project2 {
     for (String arg : args) {
       if (arg != null && arg.startsWith("-")) {
         switch (arg) {
-          case "-readme":
-          case "-README":
-          case "-r":
+          case README_FLAG:
             flag += "r";
             break;
-          case "-print":
-          case "-p":
+          case PRINT_FLIGHT_FLAG:
             flag += "p";
             break;
-          case "-textFile":
-          case "-f":
+          case TEXT_FILE_FLAG:
             flag += "f";
+            break;
+          case PRETTY_PRINT_FLAG:
+            flag += "b";
           default:
         }
       }
     }
-
     return flag;
   }
 
@@ -207,17 +221,17 @@ public class Project2 {
    * @throws InvalidArgumentException
    *        If filepath cannot be found in args
    */
-  public static String getFilePathFromArgs(String[] args) throws InvalidArgumentException {
+  public static String getFilePathFromArgs(String[] args, String flag) throws InvalidArgumentException {
     String filePath = "";
     int currArg = 0;
-    while (currArg < args.length && args[currArg].startsWith("-")) {
-      if (args[currArg].equals("-textFile") && currArg+1 < args.length) {
+    while (currArg < args.length - 1) {
+      if (args[currArg].equals(flag) && currArg+1 < args.length) {
         filePath = args[currArg + 1];
       }
       currArg++;
     }
     if (filePath.equals("")) {
-      throw new InvalidArgumentException(ERR_MISSING_ARGS + " Could not find filepath!");
+      throw new InvalidArgumentException("Could not find filepath!\n" + ERR_MISSING_ARGS);
     } else {
       return filePath;
     }
@@ -236,15 +250,13 @@ public class Project2 {
     File airlineFile = null;
     try {
       airlineFile = new File(filePath);
-
       if (airlineFile.createNewFile()) {
-        System.out.println("Airline file created at " + airlineFile.getAbsolutePath());
+        // System.out.println("Airline file created at " + airlineFile.getAbsolutePath());
         return false;
       }
     } catch (IOException ex) {
       throw new InvalidArgumentException("Could not create file at " + airlineFile.getAbsolutePath());
     }
-
     return true;
   }
   /**
@@ -272,7 +284,6 @@ public class Project2 {
     */
       airlineName = arg;
     //}
-
     return airlineName;
   }
 
@@ -304,7 +315,7 @@ public class Project2 {
     if (arg.matches("(?i)[A-Z][A-Z][A-Z]")) {
       return arg.toUpperCase();
     } else {
-      throw new InvalidArgumentException(ERR_AIRPORT_CODE);
+      throw new InvalidArgumentException(ERR_INVALID_AIRPORT_CODE);
     }
   }
 
@@ -315,13 +326,44 @@ public class Project2 {
    * @return
    *        A <code>String</code> for the <code>Flight</code> date and time.
    */
-  public static String getFlightDateFromArgs(String[] args) throws InvalidArgumentException {
-    String flightDeparture = args[0] + " " + args[1];
+  public static Date getFlightDateFromArgs(String[] args) throws InvalidArgumentException {
+    String flightTimeString = args[0] + " " + args[1] + " " + args[2];
     // Make sure flightDeparture is a string formatted mm/dd/yyyy hh:mm
-    if (flightDeparture.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [0-2]?[0-9]:[0-5][0-9]")) {
-      return flightDeparture;
+    //if (flightTimeString.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [0-1]?[0-9]:[0-5][0-9] (am|pm)")) {
+    try {
+      SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm aa");
+      sdf.setLenient(false);
+      return sdf.parse(flightTimeString);
+    } catch (ParseException ex) {
+      throw new InvalidArgumentException(ERR_FLIGHT_TIME_FORMAT);
+    }
+  }
+
+  public static void PrettyPrint(String[] args, Airline airline) {
+    boolean doPrintToFile = false;
+    File printFile = null;
+    try {
+      String printFilePath = getFilePathFromArgs(args, PRETTY_PRINT_FLAG);
+      if (!printFilePath.equals("-")) {
+        doPrintToFile = true;
+        checkIfFileAlreadyExists(printFilePath);
+        printFile = new File(printFilePath);
+      }
+    } catch (InvalidArgumentException ex) {
+      System.err.println(ex.getMessage());
+      System.exit(1);
+    }
+
+    if (doPrintToFile) {
+      try {
+        PrettyPrinter printer = new PrettyPrinter(new BufferedWriter(new FileWriter(printFile)));
+        printer.dump(airline);
+      } catch (IOException ex) {
+        System.err.println("Could not write to file " + printFile.getAbsolutePath());
+        System.exit(1);
+      }
     } else {
-      throw new InvalidArgumentException(ERR_FLIGHT_TIME);
+      System.out.println("Look I'm pretty printing to stdout");
     }
   }
 }

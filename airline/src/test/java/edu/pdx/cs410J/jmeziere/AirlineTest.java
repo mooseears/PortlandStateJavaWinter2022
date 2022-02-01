@@ -1,6 +1,8 @@
 package edu.pdx.cs410J.jmeziere;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 import org.junit.jupiter.api.Disabled;
@@ -17,7 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class AirlineTest {
     Flight createTestFlight() {
-        return new Flight(64, "PDX", "1/23/4567 12:34", "LAX", "2/11/4567 15:45");
+        Flight flight = null;
+        try {
+            flight = new Flight(64, "PDX", new SimpleDateFormat("MM/dd/yyyy hh:mm aa").parse("1/23/4567 12:34 pm"), "LAX", new SimpleDateFormat("MM/dd/yyyy hh:mm aa").parse("2/11/4567 3:45 pm"));
+        } catch (ParseException ex) {
+            System.err.println(ex.getMessage());
+        }
+        return flight;
     }
 
     Airline createTestAirline() {

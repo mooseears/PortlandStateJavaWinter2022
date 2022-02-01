@@ -2,15 +2,19 @@ package edu.pdx.cs410J.jmeziere;
 
 import edu.pdx.cs410J.AbstractFlight;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * This class represents a <code>Flight</code>.
  */
-public class Flight extends AbstractFlight {
+public class Flight extends AbstractFlight implements Comparable<Flight> {
   private int flightNumber;
   private String src;
-  private String depart;
+  private Date depart;
   private String dest;
-  private String arrive;
+  private Date arrive;
 
   /**
    * Creates a new <code>Flight</code>.
@@ -27,7 +31,7 @@ public class Flight extends AbstractFlight {
    *        The date and 24-hour time of the flight's arrival
    *        as "mm/dd/yyyy hh:mm".
    */
-  public Flight(int flightNumber, String src, String depart, String dest, String arrive) {
+  public Flight(int flightNumber, String src, Date depart, String dest, Date arrive) {
     this.flightNumber = flightNumber;
     this.src = src;
     this.depart = depart;
@@ -55,13 +59,21 @@ public class Flight extends AbstractFlight {
   }
 
   /**
-   * Retrieves <code>Flight</code> departure date and time as a <code>String</code>.
+   * Retrieves <code>Flight</code> departure time.
    * @return depart
    */
   @Override
-  public String getDepartureString() {
+  public Date getDeparture() {
     return this.depart;
-    //throw new UnsupportedOperationException("This method is not implemented yet");
+  }
+
+  /**
+   * Retrieves <code>Flight</code> departure date and time as a <code>String</code>.
+   * @return depart as <code>String</code>.
+   */
+  @Override
+  public String getDepartureString() {
+    return new SimpleDateFormat("MM/dd/yyy hh:mm aa").format(this.depart);
   }
 
   /**
@@ -71,16 +83,39 @@ public class Flight extends AbstractFlight {
   @Override
   public String getDestination() {
     return this.dest;
-    //throw new UnsupportedOperationException("This method is not implemented yet");
+  }
+
+  /**
+   * Retrieves <code>Flight</code> arrival time.
+   * @return arrive
+   */
+  @Override
+  public Date getArrival() {
+    return this.arrive;
   }
 
   /**
    * Retrieves <code>Flight</code> arrival date and time as a <code>String</code>.
-   * @return arrive
+   * @return arrive as <code>String</code>.
    */
   @Override
   public String getArrivalString() {
-    return this.arrive;
-    //throw new UnsupportedOperationException("This method is not implemented yet");
+    return new SimpleDateFormat("MM/dd/yyy hh:mm aa").format(this.arrive);
+  }
+
+  /**
+   * Comparator for <code>Flight</code> in order of airport code, then departure time.
+   * @param flight
+   * @return 1 if flight has lower airport code and/or later time, 0 if equal, -1 otherwise
+   */
+  @Override
+  public int compareTo(Flight flight) {
+    if (this.src.compareTo(flight.getSource()) > 0) {
+      return 1;
+    } else if (this.src.compareTo(flight.getSource()) == 0) {
+      return this.depart.compareTo(flight.getDeparture());
+    } else {
+      return -1;
+    }
   }
 }

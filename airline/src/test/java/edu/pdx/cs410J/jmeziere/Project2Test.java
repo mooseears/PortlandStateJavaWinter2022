@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 
 import static edu.pdx.cs410J.jmeziere.Project2.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -83,7 +84,7 @@ class Project2Test {
     Exception exception = assertThrows(InvalidArgumentException.class, () ->
       getAirportCodeFromArgs(invalidCode)
     );
-    assertTrue(exception.getMessage().contains(ERR_AIRPORT_CODE));
+    assertTrue(exception.getMessage().contains(ERR_INVALID_AIRPORT_CODE));
   }
 
   @Test
@@ -92,14 +93,14 @@ class Project2Test {
     Exception exception = assertThrows(InvalidArgumentException.class, () ->
       getAirportCodeFromArgs(invalidCode)
     );
-    assertTrue(exception.getMessage().contains(ERR_AIRPORT_CODE));
+    assertTrue(exception.getMessage().contains(ERR_INVALID_AIRPORT_CODE));
   }
 
   @Test
   void getFlightDateFromValidInputs() {
-    String[] validDate = { "1/11/2002", "12:34" };
+    String[] validDate = { "1/11/2002", "12:34", "pm" };
     try {
-      assertThat(getFlightDateFromArgs(validDate),  equalTo("1/11/2002 12:34"));
+      assertThat(new SimpleDateFormat("MM/dd/yyyy hh:mm aa").format(getFlightDateFromArgs(validDate)),  equalTo("01/11/2002 12:34 PM"));
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
@@ -107,10 +108,10 @@ class Project2Test {
 
   @Test
   void getFlightDateFromInvalidInputsThrowsException() {
-    String[] invalidDate = { "165/11/2002", "12:34" };
+    String[] invalidDate = { "165/11/2002", "12:34", "pm" };
     Exception exception = assertThrows(InvalidArgumentException.class, () ->
             getFlightDateFromArgs(invalidDate));
-    assertTrue(exception.getMessage().contains(ERR_FLIGHT_TIME));
+    assertTrue(exception.getMessage().contains(ERR_FLIGHT_TIME_FORMAT));
   }
 
   @Test
@@ -141,7 +142,7 @@ class Project2Test {
   void getFilePathFromArgsFindFilePath() {
     String[] args = { "-readme", "-textFile", "./airline-test.txt" };
     try {
-      assertTrue(getFilePathFromArgs(args).contains("./airline-test.txt"));
+      assertTrue(getFilePathFromArgs(args, TEXT_FILE_FLAG).contains("./airline-test.txt"));
     } catch (InvalidArgumentException ex){
       System.err.println(ex.getMessage());
     }
@@ -151,7 +152,7 @@ class Project2Test {
   void getFilePathFromArgsThrowsExceptionWhenNoArgument() {
     String[] args = { "-readme", "-textFile" };
     assertThrows(InvalidArgumentException.class, () ->
-      getFilePathFromArgs(args)
+      getFilePathFromArgs(args, TEXT_FILE_FLAG)
     );
   }
 
