@@ -1,6 +1,7 @@
 package edu.pdx.cs410J.jmeziere;
 
 import edu.pdx.cs410J.ParserException;
+import edu.pdx.cs410J.AirportNames;
 
 import java.io.*;
 import java.text.ParseException;
@@ -313,10 +314,13 @@ public class Project3 {
   public static String getAirportCodeFromArgs(String arg) throws InvalidArgumentException {
     // Make sure flightSource is a string of 3 letters
     if (arg.matches("(?i)[A-Z][A-Z][A-Z]")) {
-      return arg.toUpperCase();
-    } else {
-      throw new InvalidArgumentException(ERR_INVALID_AIRPORT_CODE);
+      if (AirportNames.getNamesMap().containsKey(arg.toUpperCase())) {
+        return arg.toUpperCase();
+      } else {
+        throw new InvalidArgumentException(ERR_AIRPORT_CODE_NOT_FOUND + arg);
+      }
     }
+    throw new InvalidArgumentException(ERR_INVALID_AIRPORT_CODE + arg);
   }
 
   /**
@@ -371,12 +375,12 @@ public class Project3 {
         System.exit(1);
       }
     } else {
-      System.out.println("*-" + airline.getName().toUpperCase() + "-*");
+      System.out.println(airline.getName().toUpperCase());
 
       for (Flight f : airline.getFlights()) {
         String prettyFlight = "  -Flight #" + f.getNumber() +
-                ":\n    Departing:\t" + f.getSource() + " " + f.getDepartureString() +
-                "\n    Arriving:\t" + f.getDestination() + " " + f.getArrivalString();
+                ":\n    Departing:\t" + AirportNames.getName(f.getSource()) + "\t" + f.getDepartureString() +
+                "\n    Arriving:\t" + AirportNames.getName(f.getDestination()) + "\t" + f.getArrivalString();
         System.out.println(prettyFlight);
       }
     }

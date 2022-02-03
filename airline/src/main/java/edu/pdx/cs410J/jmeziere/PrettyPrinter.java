@@ -26,8 +26,8 @@ public class PrettyPrinter implements AirlineDumper<Airline> {
 
             for (Flight f : airline.getFlights()) {
                 String prettyFlight = "  -Flight #" + f.getNumber() +
-                        ":\n    Departing:\t" + f.getSource() + " " + f.getDepartureString() +
-                        "\n    Arriving:\t" + f.getDestination() + " " + f.getArrivalString();
+                        ":\n    Departing:\t" + AirportNames.getName(f.getSource()) + "\t" + f.getDepartureString() +
+                        "\n    Arriving:\t" + AirportNames.getName(f.getDestination()) + "\t" + f.getArrivalString();
                 pw.println(prettyFlight);
             }
             pw.flush();
