@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+/**
+ * Pretty prints an <code>Airline</code> and its flights to a file.
+ */
 public class PrettyPrinter implements AirlineDumper<Airline> {
     private final Writer writer;
 
@@ -22,11 +25,10 @@ public class PrettyPrinter implements AirlineDumper<Airline> {
             pw.println(airline.getName());
 
             for (Flight f : airline.getFlights()) {
-                pw.println(f.getNumber());
-                pw.println(f.getSource());
-                pw.println(f.getDepartureString());
-                pw.println(f.getDestination());
-                pw.println(f.getArrivalString());
+                String prettyFlight = "  -Flight #" + f.getNumber() +
+                        ":\n    Departing:\t" + f.getSource() + " " + f.getDepartureString() +
+                        "\n    Arriving:\t" + f.getDestination() + " " + f.getArrivalString();
+                pw.println(prettyFlight);
             }
             pw.flush();
         }

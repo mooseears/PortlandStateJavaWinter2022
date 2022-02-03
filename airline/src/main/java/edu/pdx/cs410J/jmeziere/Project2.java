@@ -147,7 +147,7 @@ public class Project2 {
       if (doPrint) { System.out.println(flight); }
 
       // Pretty print airline info if flagged
-      if (doPrettyPrint) { PrettyPrint(args, airline); }
+      if (doPrettyPrint) { prettyPrint(args, airline); }
 
       // Write airline and flight info to file
       if (doCheckFile) {
@@ -339,7 +339,15 @@ public class Project2 {
     }
   }
 
-  public static void PrettyPrint(String[] args, Airline airline) {
+  /**
+   * Performs a pretty print of the <code>Airline</code>> and its flights either to the specified file or to stdout
+   * @param args
+   *        A <code>String</code> array of command line arguments,
+   *        used to grab the filepath.
+   * @param airline
+   *        The <code>Airline</code> to print from.
+   */
+  public static void prettyPrint(String[] args, Airline airline) {
     boolean doPrintToFile = false;
     File printFile = null;
     try {
@@ -363,7 +371,14 @@ public class Project2 {
         System.exit(1);
       }
     } else {
-      System.out.println("Look I'm pretty printing to stdout");
+      System.out.println("*-" + airline.getName().toUpperCase() + "-*");
+
+      for (Flight f : airline.getFlights()) {
+        String prettyFlight = "  -Flight #" + f.getNumber() +
+                ":\n    Departing:\t" + f.getSource() + " " + f.getDepartureString() +
+                "\n    Arriving:\t" + f.getDestination() + " " + f.getArrivalString();
+        System.out.println(prettyFlight);
+      }
     }
   }
 }
