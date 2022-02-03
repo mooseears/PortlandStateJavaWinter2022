@@ -18,8 +18,8 @@ public class PrettyPrinterTest {
     Airline airline = new Airline(airlineName);
 
     StringWriter sw = new StringWriter();
-    TextDumper dumper = new TextDumper(sw);
-    dumper.dump(airline);
+    PrettyPrinter printer = new PrettyPrinter(sw);
+    printer.dump(airline);
 
     String text = sw.toString();
     assertThat(text, containsString(airlineName));
@@ -31,8 +31,8 @@ public class PrettyPrinterTest {
     Airline airline = new Airline(airlineName);
 
     File textFile = new File(tempDir, "airline.txt");
-    TextDumper dumper = new TextDumper(new FileWriter(textFile));
-    dumper.dump(airline);
+    PrettyPrinter printer = new PrettyPrinter(new FileWriter(textFile));
+    printer.dump(airline);
 
     TextParser parser = new TextParser(new FileReader(textFile));
     Airline read = parser.parse();
