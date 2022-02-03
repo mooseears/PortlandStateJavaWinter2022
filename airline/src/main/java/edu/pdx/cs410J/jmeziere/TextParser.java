@@ -3,14 +3,12 @@ package edu.pdx.cs410J.jmeziere;
 import edu.pdx.cs410J.AirlineParser;
 import edu.pdx.cs410J.ParserException;
 
-import javax.swing.text.html.parser.Parser;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Date;
 
-import static edu.pdx.cs410J.jmeziere.Project2.*;
+import static edu.pdx.cs410J.jmeziere.Project3.*;
 
 public class TextParser implements AirlineParser<Airline> {
   private final Reader reader;
