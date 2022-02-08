@@ -165,6 +165,5 @@ class Project3Test {
     } catch (URISyntaxException | InvalidArgumentException ex) {
       System.err.println(ex.getMessage());
     }
-
   }
 }
