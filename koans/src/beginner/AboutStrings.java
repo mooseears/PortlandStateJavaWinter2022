@@ -4,6 +4,7 @@ import com.sandwich.koan.Koan;
 import com.sandwich.util.Strings;
 
 import java.text.MessageFormat;
+import java.util.MissingFormatArgumentException;
 
 import static com.sandwich.koan.constant.KoanConstants.__;
 import static com.sandwich.util.Assert.assertEquals;
@@ -13,7 +14,7 @@ public class AboutStrings {
 
     @Koan
     public void implicitStrings() {
-        assertEquals("just a plain ole string".getClass(), __);
+        assertEquals("just a plain ole string".getClass(), new String("hello").getClass());
     }
 
     @Koan
@@ -165,8 +166,8 @@ public class AboutStrings {
             String.format("%s %s %s", "a", "b");
             fail("No Exception was thrown!");
         } catch (Exception e) {
-            assertEquals(e.getClass(), __);
-            assertEquals(e.getMessage(), __);
+            assertEquals(e.getClass(), MissingFormatArgumentException.class);
+            assertEquals(e.getMessage(), "Format specifier '%s'");
         }
     }
 
@@ -182,6 +183,6 @@ public class AboutStrings {
 
     @Koan
     public void insufficientArgumentsToMessageFormatDoesNotReplaceTheToken() {
-        assertEquals(MessageFormat.format("{0} {1} {0}", "a"), "a 1 a");
+        assertEquals(MessageFormat.format("{0} {1} {0}", "a"), "a {1} a");
     }
 }
