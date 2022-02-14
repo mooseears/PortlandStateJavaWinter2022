@@ -8,7 +8,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 
-import static edu.pdx.cs410J.jmeziere.Project3.*;
+import static edu.pdx.cs410J.jmeziere.Project4.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,16 +16,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * A unit test for code in the <code>Project3</code> class.  This is different
- * from <code>Project3IT</code> which is an integration test and can handle the calls
+ * A unit test for code in the <code>Project4</code> class.  This is different
+ * from <code>Project4IT</code> which is an integration test and can handle the calls
  * to {@link System#exit(int)} and the like.
  */
-class Project3Test {
+class Project4Test {
 
   @Test
   void readmeCanBeReadAsResource() throws IOException {
     try (
-      InputStream readme = Project3.class.getResourceAsStream("README.txt")
+      InputStream readme = Project4.class.getResourceAsStream("README.txt")
     ) {
       assertThat(readme, not(nullValue()));
       BufferedReader reader = new BufferedReader(new InputStreamReader(readme));
@@ -159,7 +159,7 @@ class Project3Test {
   @Test
   void checkIfFileAlreadyExistsReturnsTrue() {
     try {
-      URL resource = Project3.class.getResource("valid-airline.txt");
+      URL resource = Project4.class.getResource("valid-airline.txt");
       String filePath = Paths.get(resource.toURI().getPath()).toString();
       assertThat(checkIfFileAlreadyExists(filePath), is(true));
     } catch (URISyntaxException | InvalidArgumentException ex) {

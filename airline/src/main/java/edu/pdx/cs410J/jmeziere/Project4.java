@@ -18,7 +18,7 @@ class InvalidArgumentException extends Exception {
 /**
  * The main class for the CS410J airline Project.
  */
-public class Project3 {
+public class Project4 {
   static final int MIN_ARGS = 8;
   static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
           "\nUsage: [-print] [-readme] [-textFile filepath] [-pretty (filepath|-)] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
@@ -197,7 +197,7 @@ public class Project3 {
    * Displays the contents of a readme file.
    */
   private static void displayReadme() {
-    try (InputStream readme = Project3.class.getResourceAsStream("README.txt")) {
+    try (InputStream readme = Project4.class.getResourceAsStream("README.txt")) {
       try (BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
         String line;
         while ((line = reader.readLine()) != null) {

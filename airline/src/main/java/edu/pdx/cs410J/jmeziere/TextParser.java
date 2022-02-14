@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Date;
 
-import static edu.pdx.cs410J.jmeziere.Project3.*;
+import static edu.pdx.cs410J.jmeziere.Project4.*;
 
 public class TextParser implements AirlineParser<Airline> {
   private final Reader reader;
