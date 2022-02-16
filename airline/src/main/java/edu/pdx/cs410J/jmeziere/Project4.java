@@ -331,7 +331,12 @@ public class Project4 {
    *        A <code>String</code> for the <code>Flight</code> date and time.
    */
   public static Date getFlightDateFromArgs(String[] args) throws InvalidArgumentException {
-    String flightTimeString = args[0] + " " + args[1] + " " + args[2];
+    String[] timeSubstring = args[1].split(":");
+    int hour = Integer.parseInt(timeSubstring[0]);
+    String minute = ":" + timeSubstring[1];
+    if (hour > 12)
+      hour -= 12;
+    String flightTimeString = args[0] + " " + hour + minute + " " + args[2];
     // Make sure flightDeparture is a string formatted mm/dd/yyyy hh:mm
     //if (flightTimeString.matches("[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{4} [0-1]?[0-9]:[0-5][0-9] (am|pm)")) {
     try {
