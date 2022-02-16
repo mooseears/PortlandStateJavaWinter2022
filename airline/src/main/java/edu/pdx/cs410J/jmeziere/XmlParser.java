@@ -23,6 +23,7 @@ public class XmlParser implements AirlineParser<Airline> {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(null);
             Document doc = builder.parse(xmlFile);
             doc.getDocumentElement().normalize();
             Element root = doc.getDocumentElement();

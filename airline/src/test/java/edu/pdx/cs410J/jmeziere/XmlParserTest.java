@@ -1,8 +1,10 @@
 package edu.pdx.cs410J.jmeziere;
 
+import edu.pdx.cs410J.ParserException;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class XmlParserTest {
 
@@ -56,5 +59,16 @@ public class XmlParserTest {
         assertThat(f2.getDepartureString(), equalTo("05/15/2020 07:24 AM"));
         assertThat(f2.getDestination(), equalTo("XIY"));
         assertThat(f2.getArrivalString(), equalTo("05/16/2020 09:07 AM"));
+    }
+
+    @Test
+    void xmlParserThrowsExceptionForIncompleteXmlFile() throws URISyntaxException {
+        Airline airline = null;
+        URL resource = Project4.class.getResource("invalid-airline.xml");
+        File xmlFile = new File(Paths.get(resource.toURI().getPath()).toString());
+        assertThat(xmlFile, notNullValue());
+
+        XmlParser parser = new XmlParser(xmlFile);
+        assertThrows(ParserException.class, parser::parse);
     }
 }
