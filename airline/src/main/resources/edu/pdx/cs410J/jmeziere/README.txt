@@ -1,7 +1,7 @@
 This is a README file!
 
 Author: Jacob Meziere
-Project: Project 3
+Project: Project 4
 
 This program takes command line arguments to create a flight and the airline under which it is flying.
 
@@ -14,7 +14,9 @@ java -jar target/airline-2022.0.0.jar -options airline_name flight_number depart
 	-readme
 		Display this readme. This option will not execute the rest of the program.
     -textFile filepath
-        Creates airline and flights from existing file or creates a new file and adds airline and flights to it.
+        Creates airline and flights from existing text file or creates a new text file and adds airline and flights to it.
+    -xmlFile filepath
+        Creates airline and flights from existing xml file or creates a new xml file and adds airline and flights to it.
     -pretty (filepath | -)
         Pretty prints the airline and its flights to either the file specified in filepath or to standard out.
 

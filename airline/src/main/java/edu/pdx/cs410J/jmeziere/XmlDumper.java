@@ -16,6 +16,9 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.*;
 
+/**
+ * Class for XmlDumper
+ */
 public class XmlDumper implements AirlineDumper<Airline> {
     private File xmlFile;
 
@@ -23,6 +26,11 @@ public class XmlDumper implements AirlineDumper<Airline> {
         this.xmlFile = file;
     }
 
+    /**
+     * Writes an <code>Airline</code> and its <code>Flight</code>s to an XML file.
+     * @param airline
+     *        The <code>Airline</code> to write to file.
+     */
     public void dump(Airline airline) {
 
         try {
@@ -60,6 +68,15 @@ public class XmlDumper implements AirlineDumper<Airline> {
         }
     }
 
+    /**
+     * Creates an XML formatted section for a <code>Flight</code>
+     * @param doc
+     *        A DOM document object.
+     * @param flight
+     *        A <code>Flight</code> object to read from.
+     * @return
+     *        An XML Element containing <code>Flight</code> information.
+     */
     public Element createFlightElement(Document doc, Flight flight) {
         Element newFlight = doc.createElement("flight");
         Element newFlightNum = doc.createElement("number");
@@ -89,6 +106,15 @@ public class XmlDumper implements AirlineDumper<Airline> {
         return newFlight;
     }
 
+    /**
+     * Creates an XML formatted section for a date and time.
+     * @param doc
+     *        A DOM document object.
+     * @param date
+     *        A <code>String</code> containing date and time.
+     * @return
+     *        An XML Element array containing date and time elements.
+     */
     public Element[] createFlightDateTimeElement(Document doc, String date) {
         Element[] newFlightDateTime = { doc.createElement("date"), doc.createElement("time") };
         String[] flightDateTime = date.split(" ");

@@ -10,6 +10,9 @@ import java.util.Date;
 
 import org.w3c.dom.*;
 
+/**
+ * Class for XmlParser
+ */
 public class XmlParser implements AirlineParser<Airline> {
     private File xmlFile = null;
 
@@ -17,6 +20,10 @@ public class XmlParser implements AirlineParser<Airline> {
         this.xmlFile = file;
     }
 
+    /**
+     * Reads an <code>Airline</code> and its <code>Flight</code>s from an XML file.
+     *
+     */
     public Airline parse() throws ParserException {
         Airline airline = null;
         try {

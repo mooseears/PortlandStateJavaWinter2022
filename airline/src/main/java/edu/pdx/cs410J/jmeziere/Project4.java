@@ -21,17 +21,19 @@ class InvalidArgumentException extends Exception {
 public class Project4 {
   static final int MIN_ARGS = 8;
   static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
-          "\nUsage: [-print] [-readme] [-textFile filepath] [-pretty (filepath|-)] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
+          "\nUsage: [-print] [-readme] [(-textFile | -xmlFile) filepath] [-pretty (filepath|-)] Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
   static final String ERR_EXTRA_ARGS = "There are extra command line arguments: ";
   static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits: ";
   static final String ERR_INVALID_AIRPORT_CODE = "Invalid airport code. Should be 3 letters: ";
   static final String ERR_AIRPORT_CODE_NOT_FOUND = "Invalid airport code. Airport code unknown: ";
   static final String ERR_FLIGHT_TIME_FORMAT = "Invalid date and time. Should be mm/dd/yyy hh:mm am/pm: ";
   static final String ERR_FLIGHT_TIME_PARADOX = "Invalid departure and arrival times. Arrival cannot happen before departure";
+  static final String ERR_TEXT_AND_XML_FILE = "Invalid arguments. Cannot use both text and xml file flags.";
   static final String TEXT_FILE_FLAG = "-textFile";
   static final String PRETTY_PRINT_FLAG = "-pretty";
   static final String PRINT_FLIGHT_FLAG = "-print";
   static final String README_FLAG = "-readme";
+  static final String XML_FILE_FLAG = "-xmlFile";
 
   public static void main(String[] args) {
     boolean doReadme = false;
@@ -39,28 +41,38 @@ public class Project4 {
     boolean doCheckFile = false;
     boolean doReadFile = false;
     boolean doPrettyPrint = false;
+    String fileType = null;
 
     try { // Check for at least one argument
       if (args.length < 1) {
         throw new InvalidArgumentException(ERR_MISSING_ARGS);
       }
+
+      String flag = checkArgsForFlags(args);
+      if (flag.contains("r")) {
+        doReadme = true;
+        displayReadme();
+      }
+      if (flag.contains("p")) {
+        doPrint = true;
+      }
+      if (flag.contains("f") && flag.contains("x")) {
+        throw new InvalidArgumentException(ERR_TEXT_AND_XML_FILE);
+      }
+      if (flag.contains("f")) {
+        doCheckFile = true;
+        fileType = TEXT_FILE_FLAG;
+      }
+      if (flag.contains("x")) {
+        doCheckFile = true;
+        fileType = XML_FILE_FLAG;
+      }
+      if (flag.contains("b")) { // beauty?
+        doPrettyPrint = true;
+      }
     } catch (InvalidArgumentException ex) {
       System.err.println(ex.getMessage());
-    }
-
-    String flag = checkArgsForFlags(args);
-    if (flag.contains("r")) {
-      doReadme = true;
-      displayReadme();
-    }
-    if (flag.contains("p")) {
-      doPrint = true;
-    }
-    if (flag.contains("f")) {
-      doCheckFile = true;
-    }
-    if (flag.contains("b")) { // beauty?
-      doPrettyPrint = true;
+      System.exit(1);
     }
 
     if (!doReadme) {
@@ -71,18 +83,18 @@ public class Project4 {
       Date flightDeparture = null;
       String flightDestination = "";
       Date flightArrival = null;
-      String textFilePath = "";
+      String filePath = "";
 
       int currArg = 0; // Keeps track of which argument is being checked.
-      if (doCheckFile) { // If textFile flag is enabled, check for text file
+      if (doCheckFile) { // If file flag is enabled, check for file
         try {
-          textFilePath = getFilePathFromArgs(args, TEXT_FILE_FLAG);
-          doReadFile = checkIfFileAlreadyExists(textFilePath);
+          filePath = getFilePathFromArgs(args, fileType);
+          doReadFile = checkIfFileAlreadyExists(filePath);
         } catch (InvalidArgumentException ex) {
           System.err.println(ex.getMessage());
           System.exit(1);
         }
-        airlineFile = new File(textFilePath);
+        airlineFile = new File(filePath);
       }
 
       if (doPrint) { currArg++; } // If print flag is enabled, start parsing at next argument
@@ -125,8 +137,11 @@ public class Project4 {
       Airline airline = null;
       if (doReadFile) { // Get airline and flight info from file
         try {
-          TextParser parser = new TextParser(new BufferedReader(new FileReader(airlineFile)));
-          airline = parser.parse();
+          if (fileType.equals(TEXT_FILE_FLAG)) {
+            airline = new TextParser(new BufferedReader(new FileReader(airlineFile))).parse();
+          } else {
+            airline = new XmlParser(airlineFile).parse();
+          }
           if (!airline.getName().equals(airlineName)) {
             throw new InvalidArgumentException("Airline names do not match!");
           }
@@ -153,9 +168,12 @@ public class Project4 {
       // Write airline and flight info to file
       if (doCheckFile) {
         try {
-          TextDumper dumper = new TextDumper(new BufferedWriter(new FileWriter(airlineFile)));
-          dumper.dump(airline);
-        } catch (IOException ex) {
+          if (fileType.equals(TEXT_FILE_FLAG)) {
+            new TextDumper(new BufferedWriter(new FileWriter(airlineFile))).dump(airline);
+          } else {
+            new XmlDumper(airlineFile).dump(airline);
+          }
+        } catch (Exception ex) {
           System.err.println("Could not write to file " + airlineFile.getAbsolutePath());
         }
       }
@@ -183,6 +201,9 @@ public class Project4 {
             break;
           case TEXT_FILE_FLAG:
             flag += "f";
+            break;
+          case XML_FILE_FLAG:
+            flag += "x";
             break;
           case PRETTY_PRINT_FLAG:
             flag += "b";
@@ -252,7 +273,6 @@ public class Project4 {
     try {
       airlineFile = new File(filePath);
       if (airlineFile.createNewFile()) {
-        // System.out.println("Airline file created at " + airlineFile.getAbsolutePath());
         return false;
       }
     } catch (IOException ex) {
@@ -268,9 +288,9 @@ public class Project4 {
    *        A <code>String</code> for the <code>Airline</code> name.
    */
   public static String getAirlineFromArgs(String arg) {
+    /*
     String airlineName = "";
     // Check if the airline name is multiple strings in quotes
-    /*
     if (args[currArg].startsWith("\"")) {
       while (!args[currArg].endsWith("\"")) {
         airlineName += (args[currArg] + " ");
@@ -282,10 +302,10 @@ public class Project4 {
       }
       airlineName += args[currArg];
     } else {
-    */
       airlineName = arg;
-    //}
-    return airlineName;
+    }
+    */
+    return arg;
   }
 
   /**
