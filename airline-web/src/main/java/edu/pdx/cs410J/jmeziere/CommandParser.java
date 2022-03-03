@@ -2,7 +2,6 @@ package edu.pdx.cs410J.jmeziere;
 
 import edu.pdx.cs410J.AirportNames;
 
-import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -16,14 +15,19 @@ class InvalidArgumentException extends Exception {
 
 public class CommandParser {
     static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
-            "\nUsage: [-print] [-readme] [-search] -host hostName -port portNumber Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
-    static final String ERR_EXTRA_ARGS = "There are extra command line arguments: ";
-    static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits: ";
-    static final String ERR_INVALID_AIRPORT_CODE = "Invalid airport code. Should be 3 letters: ";
-    static final String ERR_AIRPORT_CODE_NOT_FOUND = "Invalid airport code. Airport code unknown: ";
-    static final String ERR_FLIGHT_TIME_FORMAT = "Invalid date and time. Should be mm/dd/yyy hh:mm am/pm: ";
+            "\nUsage: [-print] [-readme] [-search Airline FlightSource FlightDestination] -host hostName -port portNumber Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
+    static final String ERR_EXTRA_ARGS = "There are extra command line arguments.";
+    static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits.";
+    static final String ERR_INVALID_AIRPORT_CODE = "Invalid airport code. Should be 3 letters.";
+    static final String ERR_AIRPORT_CODE_NOT_FOUND = "Invalid airport code. Airport code unknown.";
+    static final String ERR_FLIGHT_TIME_FORMAT = "Invalid date and time. Should be mm/dd/yyy hh:mm am/pm.";
     static final String ERR_FLIGHT_TIME_PARADOX = "Invalid departure and arrival times. Arrival cannot happen before departure";
+    static final String ERR_PORT_NUM = "Invalid port number.";
+    static final String ERR_MISSING_HOST = "Missing host name.";
+    static final String ERR_MISSING_PORT = "Missing port number.";
+
     static final int MIN_AIRLINE_ARGS = 8;
+    static final int INVALID_NUM = -1234567;
 
     static final String HOST_FLAG = "-host";
     static final String PORT_FLAG = "-port";
@@ -32,10 +36,10 @@ public class CommandParser {
     static final String README_FLAG = "-readme";
 
     private String hostName = null;
-    private String portNum = null;
+    private int portNum = INVALID_NUM;
     private String flags = null;
     private String airlineName = null;
-    private int flightNum = 0;
+    private int flightNum = INVALID_NUM;
     private String flightSource = null;
     private Date flightDepart = null;
     private String flightDest = null;
@@ -43,7 +47,7 @@ public class CommandParser {
 
     public CommandParser(String[] args) {
         try {
-            if (args.length < 1)
+            if (args.length < 5)
                 throw new InvalidArgumentException(ERR_MISSING_ARGS);
 
             // Get flags
@@ -60,59 +64,84 @@ public class CommandParser {
                         break;
                     case SEARCH_FLAG:
                         flags += "s";
-                        flagCount++;
+                        if (i+2 >= args.length)
+                            throw new InvalidArgumentException(ERR_MISSING_ARGS);
+                        airlineName = args[++i];
+                        flightSource = getAirportCodeFromArgs(args[i+1]);
+                        flightDest = getAirportCodeFromArgs(args[i+2]);
+                        i += 2;
+                        flagCount += 3;
                         break;
                     case HOST_FLAG:
+                        flags += "h";
                         if (i+1 >= args.length)
                             throw new InvalidArgumentException(ERR_MISSING_ARGS);
                         hostName = args[++i];
                         flagCount += 2;
                         break;
                     case PORT_FLAG:
+                        flags += "t";
                         if (i+1 >= args.length)
                             throw new InvalidArgumentException(ERR_MISSING_ARGS);
-                        portNum = args[++i];
+                        try {
+                            portNum = Integer.parseInt(args[++i]);
+                        } catch (Exception ex) {
+                            throw new InvalidArgumentException(ERR_PORT_NUM);
+                        }
                         flagCount += 2;
                         break;
                     default:
                 }
             }
-            int currArg = flagCount + 1;
 
-            if (args.length - currArg < MIN_AIRLINE_ARGS)
-                throw new InvalidArgumentException(ERR_MISSING_ARGS);
+            if (!flags.contains("h"))
+                throw new InvalidArgumentException(ERR_MISSING_HOST);
+            if (!flags.contains("t"))
+                throw new InvalidArgumentException(ERR_MISSING_PORT);
 
-            airlineName = args[currArg];
-            currArg++;
-            flightNum = getFlightNumberFromArgs(args[currArg]);
-            currArg++;
-            flightSource = getAirportCodeFromArgs(args[currArg]);
-            currArg++;
-            flightDepart = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+3));
-            currArg += 3;
-            flightDest = getAirportCodeFromArgs(args[currArg]);
-            currArg++;
-            flightArrive = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg+3));
-            currArg += 3;
+            if (!flags.contains("r")) {
+                int currArg = flagCount;
+                if (currArg >= args.length) {
+                    throw new InvalidArgumentException(ERR_MISSING_ARGS);
+                } else if (!flags.contains("s")) {
+                    airlineName = args[currArg];
+                    currArg++;
+                    if (currArg == args.length) {
+                        flags += "b"; // stop parsing commands and set flag to print airline
+                    } else {
+                        if (args.length - currArg < MIN_AIRLINE_ARGS)
+                            throw new InvalidArgumentException(ERR_MISSING_ARGS);
+                        flightNum = getFlightNumberFromArgs(args[currArg]);
+                        currArg++;
+                        flightSource = getAirportCodeFromArgs(args[currArg]);
+                        currArg++;
+                        flightDepart = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg + 3));
+                        currArg += 3;
+                        flightDest = getAirportCodeFromArgs(args[currArg]);
+                        currArg++;
+                        flightArrive = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg + 3));
+                        currArg += 3;
 
-            if (currArg < args.length)
-                throw new InvalidArgumentException(ERR_EXTRA_ARGS);
-
-        } catch( Exception ex) {
+                        if (currArg < args.length)
+                            throw new InvalidArgumentException(ERR_EXTRA_ARGS);
+                    }
+                }
+            }
+        } catch(Exception ex) {
             System.err.println(ex.getMessage());
             System.exit(1);
         }
     }
 
-    public String GetHostName() { return hostName; }
-    public String GetPortNum() { return portNum; }
-    public String GetFlags() { return flags; }
-    public String GetAirlineName() { return airlineName; }
-    public int GetFlightNum() { return flightNum; }
-    public String GetFlightSrc() { return flightSource; }
-    public Date GetFlightDepart() { return flightDepart; }
-    public String GetFlightDest() { return flightDest; }
-    public Date GetFlightArrive() { return flightArrive; }
+    public String getHostName() { return hostName; }
+    public int getPortNum() { return portNum; }
+    public String getFlags() { return flags; }
+    public String getAirlineName() { return airlineName; }
+    public int getFlightNum() { return flightNum; }
+    public String getFlightSrc() { return flightSource; }
+    public Date getFlightDepart() { return flightDepart; }
+    public String getFlightDest() { return flightDest; }
+    public Date getFlightArrive() { return flightArrive; }
 
     /**
      * Creates and returns a valid <code>int</code> for a <code>Flight</code> number.

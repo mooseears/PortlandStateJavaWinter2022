@@ -2,9 +2,7 @@ package edu.pdx.cs410J.jmeziere;
 
 import edu.pdx.cs410J.ParserException;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -12,79 +10,64 @@ import java.util.Map;
  * Airline server using REST.
  */
 public class Project5 {
-
-    public static final String MISSING_ARGS = "Missing command line arguments";
-
     public static void main(String... args) {
-        String hostName = null;
-        String portString = null;
-        String word = null;
-        String definition = null;
+        CommandParser commands = new CommandParser(args);
+        String hostName = commands.getHostName();
+        int port = commands.getPortNum();
+        String flags = commands.getFlags();
 
-        for (String arg : args) {
-            if (hostName == null) {
-                hostName = arg;
+        if (flags.contains("r")){
+            displayReadme();
+        } else {
+            AirlineRestClient client = new AirlineRestClient(hostName, port);
 
-            } else if ( portString == null) {
-                portString = arg;
+            try {
+                StringWriter writer = new StringWriter();
+                PrettyPrinter printer = new PrettyPrinter(writer);
+                Airline airline = new Airline(commands.getAirlineName());
 
-            } else if (word == null) {
-                word = arg;
-
-            } else if (definition == null) {
-                definition = arg;
-
-            } else {
-                usage("Extraneous command line argument: " + arg);
+                if (flags.contains("b") || flags.contains("s")) {
+                    if (flags.contains("s")) {
+                        Map<String, Airline> airlines = client.searchAirline(airline.getName(), commands.getFlightSrc(), commands.getFlightDest());
+                        if (airlines.get(airline.getName()).getFlights().isEmpty()) {
+                            System.out.println("No flights found under airline " + airline.getName() + " flying from " + commands.getFlightSrc() + " to " + commands.getFlightDest() + ".");
+                        } else {
+                            for (Airline line : airlines.values()) {
+                                printer.dump(line);
+                            }
+                        }
+                    } else {
+                        Map<String, Airline> airlines = client.getAirline(airline.getName());
+                        if (airlines.get(airline.getName()).getFlights().isEmpty()) {
+                            System.out.println("No flights found under airline " + airline.getName() + ".");
+                        } else {
+                            for (Airline line : airlines.values()) {
+                                printer.dump(line);
+                            }
+                        }
+                    }
+                } else {
+                    Flight flight = new Flight(
+                            commands.getFlightNum(),
+                            commands.getFlightSrc(),
+                            commands.getFlightDepart(),
+                            commands.getFlightDest(),
+                            commands.getFlightArrive()
+                    );
+                    airline.addFlight(flight);
+                    if (flags.contains("p"))
+                        System.out.println(flight);
+                    client.addAirlineFlightEntry(commands.getAirlineName(), airline);
+                }
+            } catch (IOException ex) {
+                error("While contacting server: " + ex);
+                return;
+            } catch (ParserException ex) {
+                error(ex.getMessage());
+            } catch (Exception ex) {
+                error("Couldn't parse XML from server: " + ex);
             }
         }
-
-        if (hostName == null) {
-            usage( MISSING_ARGS );
-            return;
-
-        } else if ( portString == null) {
-            usage( "Missing port" );
-            return;
-        }
-
-        int port;
-        try {
-            port = Integer.parseInt( portString );
-
-        } catch (NumberFormatException ex) {
-            usage("Port \"" + portString + "\" must be an integer");
-            return;
-        }
-
-        AirlineRestClient client = new AirlineRestClient(hostName, port);
-
-        String message;
-        try {
-            if (word == null) {
-                // Print all word/definition pairs
-                Map<String, String> dictionary = client.getAllDictionaryEntries();
-                StringWriter sw = new StringWriter();
-                PrettyPrinter pretty = new PrettyPrinter(sw);
-                pretty.dump(dictionary);
-                message = sw.toString();
-
-            } else if (definition == null) {
-                // Print all dictionary entries
-                message = PrettyPrinter.formatDictionaryEntry(word, client.getDefinition(word));
-
-            } else {
-                // Post the word/definition pair
-                client.addDictionaryEntry(word, definition);
-                message = Messages.definedWordAs(word, definition);
-            }
-
-        } catch (IOException | ParserException ex ) {
-            error("While contacting server: " + ex);
-            return;
-        }
-
-        System.out.println(message);
 
         System.exit(0);
     }
@@ -98,27 +81,22 @@ public class Project5 {
     }
 
     /**
-     * Prints usage information for this program and exits
-     * @param message An error message to print
+     * Displays the contents of a readme file.
      */
-    private static void usage( String message )
-    {
-        PrintStream err = System.err;
-        err.println("** " + message);
-        err.println();
-        err.println("usage: java Project5 host port [word] [definition]");
-        err.println("  host         Host of web server");
-        err.println("  port         Port of web server");
-        err.println("  word         Word in dictionary");
-        err.println("  definition   Definition of word");
-        err.println();
-        err.println("This simple program posts words and their definitions");
-        err.println("to the server.");
-        err.println("If no definition is specified, then the word's definition");
-        err.println("is printed.");
-        err.println("If no word is specified, all dictionary entries are printed");
-        err.println();
-
-        System.exit(1);
+    public static void displayReadme() {
+        try (InputStream readme = Project5.class.getResourceAsStream("README.txt")) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+        } catch (NullPointerException e) {
+            System.err.println("Readme file not found\n");
+            System.exit(1);
+        } catch (IOException e) {
+            System.err.println("Readme file issue\n");
+            System.exit(1);
+        }
     }
 }

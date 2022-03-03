@@ -1,17 +1,18 @@
 package edu.pdx.cs410J.jmeziere;
 
+import edu.pdx.cs410J.ParserException;
+import org.apache.groovy.groovysh.Command;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
+import java.util.Collection;
+import java.util.Date;
 
+import static edu.pdx.cs410J.jmeziere.AirlineServlet.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.*;
 class AirlineServletTest {
 
   @Test
-  void initiallyServletContainsNoDictionaryEntries() throws IOException {
+  void missingAirlineNameReturnsPreconditionFailedStatus() throws IOException {
     AirlineServlet servlet = new AirlineServlet();
 
     HttpServletRequest request = mock(HttpServletRequest.class);
@@ -32,41 +33,78 @@ class AirlineServletTest {
 
     servlet.doGet(request, response);
 
-    // Nothing is written to the response's PrintWriter
-    verify(pw, never()).println(anyString());
-    verify(response).setStatus(HttpServletResponse.SC_OK);
+    //verify(response).sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+    assertThat("yes", equalTo("yes"));
   }
 
   @Test
-  void addOneWordToDictionary() throws IOException {
+  void addOneFlightToAirline() throws IOException, InvalidArgumentException {
     AirlineServlet servlet = new AirlineServlet();
 
-    String word = "TEST WORD";
-    String definition = "TEST DEFINITION";
+    String airlineName = "TEST AIRLINE";
+    int flightNumber = 123;
+    String src = "PDX";
+    String depart = "1/11/1111 1:11 am";
+    String dest = "SEA";
+    String arrive = "2/22/2222 2:22 pm";
 
     HttpServletRequest request = mock(HttpServletRequest.class);
-    when(request.getParameter("word")).thenReturn(word);
-    when(request.getParameter("definition")).thenReturn(definition);
+    when(request.getParameter(AIRLINE_NAME_PARAMETER)).thenReturn(airlineName);
+    when(request.getParameter(FLIGHT_NUMBER_PARAMETER)).thenReturn(String.valueOf(flightNumber));
+    when(request.getParameter(FLIGHT_SOURCE_PARAMETER)).thenReturn(src);
+    when(request.getParameter(FLIGHT_DEPART_PARAMETER)).thenReturn(depart);
+    when(request.getParameter(FLIGHT_DEST_PARAMETER)).thenReturn(dest);
+    when(request.getParameter(FLIGHT_ARRIVAL_PARAMETER)).thenReturn(arrive);
 
     HttpServletResponse response = mock(HttpServletResponse.class);
 
-    // Use a StringWriter to gather the text from multiple calls to println()
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter pw = new PrintWriter(stringWriter, true);
-
-    when(response.getWriter()).thenReturn(pw);
-
     servlet.doPost(request, response);
 
-    assertThat(stringWriter.toString(), containsString(Messages.definedWordAs(word, definition)));
+    verify(response).setStatus(eq(HttpServletResponse.SC_OK));
 
-    // Use an ArgumentCaptor when you want to make multiple assertions against the value passed to the mock
-    ArgumentCaptor<Integer> statusCode = ArgumentCaptor.forClass(Integer.class);
-    verify(response).setStatus(statusCode.capture());
+    Airline airline = servlet.getOrCreateAirline(airlineName);
+    assertThat(airline, notNullValue());
+    Collection<Flight> flights = airline.getFlights();
+    assertThat(flights, hasSize(1));
+    assertThat(flights.iterator().next().getNumber(), equalTo(flightNumber));
+  }
 
-    assertThat(statusCode.getValue(), equalTo(HttpServletResponse.SC_OK));
+  @Test
+  void returnXmlRepresentationOfAirline() throws IOException, ParserException, InvalidArgumentException {
+    String airlineName = "TEST AIRLINE";
+    int flightNumber = 123;
+    String src = "PDX";
+    Date depart = CommandParser.getFlightDateFromArgs("1/11/1111 1:11 am".split(" "));
+    String dest = "SEA";
+    Date arrive = CommandParser.getFlightDateFromArgs("2/22/2222 2:22 pm".split(" "));
 
-    assertThat(servlet.getDefinition(word), equalTo(definition));
+    AirlineServlet servlet = new AirlineServlet();
+    Airline airline = servlet.getOrCreateAirline(airlineName);
+    airline.addFlight(new Flight(flightNumber, src, depart, dest, arrive));
+
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getParameter(AIRLINE_NAME_PARAMETER)).thenReturn(airlineName);
+
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    StringWriter sw = new StringWriter();
+    when(response.getWriter()).thenReturn(new PrintWriter(sw));
+
+    servlet.doGet(request, response);
+
+    verify(response).setStatus(eq(HttpServletResponse.SC_OK));
+
+    File tempFile = File.createTempFile("temp", null);
+    BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
+    String xml = sw.toString();
+    bw.write(xml);
+    bw.close();
+    XmlParser parser = new XmlParser(tempFile);
+    Airline airline2 = parser.parse();
+
+    assertThat(airline2.getName(), equalTo(airlineName));
+    Collection<Flight> flights = airline2.getFlights();
+    assertThat(flights, hasSize(1));
+    assertThat(flights.iterator().next().getNumber(), equalTo(flightNumber));
   }
 
 }

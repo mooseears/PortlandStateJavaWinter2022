@@ -1,46 +1,31 @@
 package edu.pdx.cs410J.jmeziere;
 
-import com.google.common.annotations.VisibleForTesting;
+import edu.pdx.cs410J.AirlineDumper;
+import edu.pdx.cs410J.AirportNames;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.Map;
 
-public class PrettyPrinter {
-  private final Writer writer;
+/**
+ * Pretty prints an <code>Airline</code> and its flights to a file.
+ */
+public class PrettyPrinter implements AirlineDumper<Airline> {
+    private final Writer writer;
 
-  @VisibleForTesting
-  static String formatWordCount(int count )
-  {
-    return String.format( "Dictionary on server contains %d words", count );
-  }
-
-  @VisibleForTesting
-  static String formatDictionaryEntry(String word, String definition )
-  {
-    return String.format("  %s : %s", word, definition);
-  }
-
-
-  public PrettyPrinter(Writer writer) {
-    this.writer = writer;
-  }
-
-  public void dump(Map<String, String> dictionary) {
-    try (
-      PrintWriter pw = new PrintWriter(this.writer)
-    ) {
-
-      pw.println(formatWordCount(dictionary.size()));
-
-      for (Map.Entry<String, String> entry : dictionary.entrySet()) {
-        String word = entry.getKey();
-        String definition = entry.getValue();
-        pw.println(formatDictionaryEntry(word, definition));
-      }
-
-      pw.flush();
+    public PrettyPrinter(Writer writer) {
+        this.writer = writer;
     }
 
-  }
+    @Override
+    public void dump(Airline airline) {
+        System.out.println("Airline: " + airline.getName());
+
+        for (Flight f : airline.getFlights()) {
+            String prettyFlight = "  -Flight #" + f.getNumber() +
+                    ":\n    Departing:\t" + AirportNames.getName(f.getSource()) + "\t" + f.getDepartureString() +
+                    "\n    Arriving:\t" + AirportNames.getName(f.getDestination()) + "\t" + f.getArrivalString();
+            System.out.println(prettyFlight);
+        }
+    }
 }
