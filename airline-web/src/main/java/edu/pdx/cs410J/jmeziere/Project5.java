@@ -5,6 +5,9 @@ import edu.pdx.cs410J.ParserException;
 import java.io.*;
 import java.util.Map;
 
+import static edu.pdx.cs410J.jmeziere.CommandParser.ERR_FLIGHT_TIME_PARADOX;
+import static edu.pdx.cs410J.jmeziere.CommandParser.ERR_MISSING_AIRPORT;
+
 /**
  * The main class that parses the command line and communicates with the
  * Airline server using REST.
@@ -28,6 +31,9 @@ public class Project5 {
 
                 if (flags.contains("b") || flags.contains("s")) {
                     if (flags.contains("s")) {
+                        if (commands.getFlightSrc() == null || commands.getFlightDest() == null) {
+                            throw new InvalidArgumentException(ERR_MISSING_AIRPORT);
+                        }
                         Map<String, Airline> airlines = client.searchAirline(airline.getName(), commands.getFlightSrc(), commands.getFlightDest());
                         if (airlines.get(airline.getName()).getFlights().isEmpty()) {
                             System.out.println("No flights found under airline " + airline.getName() + " flying from " + commands.getFlightSrc() + " to " + commands.getFlightDest() + ".");
@@ -37,6 +43,8 @@ public class Project5 {
                             }
                         }
                     } else {
+                        if (commands.getFlightDepart().compareTo(commands.getFlightArrive()) >= 0)
+                            throw new InvalidArgumentException(ERR_FLIGHT_TIME_PARADOX);
                         Map<String, Airline> airlines = client.getAirline(airline.getName());
                         if (airlines.get(airline.getName()).getFlights().isEmpty()) {
                             System.out.println("No flights found under airline " + airline.getName() + ".");
@@ -62,10 +70,9 @@ public class Project5 {
             } catch (IOException ex) {
                 error("While contacting server: " + ex);
                 return;
-            } catch (ParserException ex) {
-                error(ex.getMessage());
             } catch (Exception ex) {
-                error("Couldn't parse XML from server: " + ex);
+                error(ex.getMessage());
+                return;
             }
         }
 

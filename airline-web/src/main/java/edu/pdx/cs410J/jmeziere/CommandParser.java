@@ -15,11 +15,13 @@ class InvalidArgumentException extends Exception {
 
 public class CommandParser {
     static final String ERR_MISSING_ARGS = "Missing command line arguments!" +
-            "\nUsage: [-print] [-readme] [-search Airline FlightSource FlightDestination] -host hostName -port portNumber Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
+            "\nUsage: [-print] [-readme] [-search] -host hostName -port portNumber Airline FlightNumber DepartAirport DepartDate DepartTime ArrivalAirport ArrivalDate ArrivalTime";
     static final String ERR_EXTRA_ARGS = "There are extra command line arguments.";
     static final String ERR_FLIGHT_NUM = "Invalid flight number. Should be 1-6 digits.";
     static final String ERR_INVALID_AIRPORT_CODE = "Invalid airport code. Should be 3 letters.";
     static final String ERR_AIRPORT_CODE_NOT_FOUND = "Invalid airport code. Airport code unknown.";
+    static final String ERR_MISSING_AIRPORT = "Missing command line arguments!" +
+            "\nWhen -search option used must specify Airline, FlightSource, and FlightDestination.";
     static final String ERR_FLIGHT_TIME_FORMAT = "Invalid date and time. Should be mm/dd/yyy hh:mm am/pm.";
     static final String ERR_FLIGHT_TIME_PARADOX = "Invalid departure and arrival times. Arrival cannot happen before departure";
     static final String ERR_PORT_NUM = "Invalid port number.";
@@ -27,6 +29,7 @@ public class CommandParser {
     static final String ERR_MISSING_PORT = "Missing port number.";
 
     static final int MIN_AIRLINE_ARGS = 8;
+    static final int MIN_SEARCH_ARGS = 2;
     static final int INVALID_NUM = -1234567;
 
     static final String HOST_FLAG = "-host";
@@ -47,7 +50,7 @@ public class CommandParser {
 
     public CommandParser(String[] args) {
         try {
-            if (args.length < 5)
+            if (args.length < 1)
                 throw new InvalidArgumentException(ERR_MISSING_ARGS);
 
             // Get flags
@@ -64,13 +67,7 @@ public class CommandParser {
                         break;
                     case SEARCH_FLAG:
                         flags += "s";
-                        if (i+2 >= args.length)
-                            throw new InvalidArgumentException(ERR_MISSING_ARGS);
-                        airlineName = args[++i];
-                        flightSource = getAirportCodeFromArgs(args[i+1]);
-                        flightDest = getAirportCodeFromArgs(args[i+2]);
-                        i += 2;
-                        flagCount += 3;
+                        flagCount++;
                         break;
                     case HOST_FLAG:
                         flags += "h";
@@ -94,37 +91,43 @@ public class CommandParser {
                 }
             }
 
-            if (!flags.contains("h"))
-                throw new InvalidArgumentException(ERR_MISSING_HOST);
-            if (!flags.contains("t"))
-                throw new InvalidArgumentException(ERR_MISSING_PORT);
-
             if (!flags.contains("r")) {
+                if (!flags.contains("h"))
+                    throw new InvalidArgumentException(ERR_MISSING_HOST);
+                if (!flags.contains("t"))
+                    throw new InvalidArgumentException(ERR_MISSING_PORT);
                 int currArg = flagCount;
                 if (currArg >= args.length) {
                     throw new InvalidArgumentException(ERR_MISSING_ARGS);
-                } else if (!flags.contains("s")) {
-                    airlineName = args[currArg];
-                    currArg++;
-                    if (currArg == args.length) {
-                        flags += "b"; // stop parsing commands and set flag to print airline
-                    } else {
-                        if (args.length - currArg < MIN_AIRLINE_ARGS)
-                            throw new InvalidArgumentException(ERR_MISSING_ARGS);
+                }
+                airlineName = args[currArg];
+                currArg++;
+                if (currArg == args.length) {
+                    flags += "b"; // stop parsing commands and set flag to print airline
+                } else {
+                    if (args.length - currArg < MIN_AIRLINE_ARGS && !flags.contains("s"))
+                        throw new InvalidArgumentException(ERR_MISSING_ARGS);
+                    if (args.length - currArg < MIN_SEARCH_ARGS && flags.contains("s"))
+                        throw new InvalidArgumentException(ERR_MISSING_AIRPORT);
+                    if (!flags.contains("s")) {
                         flightNum = getFlightNumberFromArgs(args[currArg]);
                         currArg++;
-                        flightSource = getAirportCodeFromArgs(args[currArg]);
-                        currArg++;
+                    }
+                    flightSource = getAirportCodeFromArgs(args[currArg]);
+                    currArg++;
+                    if (!flags.contains("s")) {
                         flightDepart = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg + 3));
                         currArg += 3;
-                        flightDest = getAirportCodeFromArgs(args[currArg]);
-                        currArg++;
+                    }
+                    flightDest = getAirportCodeFromArgs(args[currArg]);
+                    currArg++;
+                    if (!flags.contains("s")) {
                         flightArrive = getFlightDateFromArgs(Arrays.copyOfRange(args, currArg, currArg + 3));
                         currArg += 3;
-
-                        if (currArg < args.length)
-                            throw new InvalidArgumentException(ERR_EXTRA_ARGS);
                     }
+
+                    if (currArg < args.length)
+                        throw new InvalidArgumentException(ERR_EXTRA_ARGS);
                 }
             }
         } catch(Exception ex) {
@@ -172,10 +175,10 @@ public class CommandParser {
             if (AirportNames.getNamesMap().containsKey(arg.toUpperCase())) {
                 return arg.toUpperCase();
             } else {
-                throw new InvalidArgumentException(ERR_AIRPORT_CODE_NOT_FOUND + arg);
+                throw new InvalidArgumentException(ERR_AIRPORT_CODE_NOT_FOUND);
             }
         }
-        throw new InvalidArgumentException(ERR_INVALID_AIRPORT_CODE + arg);
+        throw new InvalidArgumentException(ERR_INVALID_AIRPORT_CODE);
     }
 
     /**

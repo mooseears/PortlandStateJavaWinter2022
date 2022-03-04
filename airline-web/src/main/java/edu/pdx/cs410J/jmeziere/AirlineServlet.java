@@ -34,7 +34,7 @@ public class AirlineServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("text/xml");
+    response.setContentType("text/plain");
 
     String airlineName = getParameter(AIRLINE_NAME_PARAMETER, request);
     if (airlineName != null) {

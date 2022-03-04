@@ -14,8 +14,9 @@ java -jar target/airline-client.jar -options -host host_name -port port_number a
 		Print out the flight information after program execution.
 	-readme
 		Display this readme. This option will not execute the rest of the program.
-    -search airline_name flight_source flight_destination
+    -search
         Retrieve flights flying under the specified airline from one airport to the other.
+        When this option is set only the airline, source airport, and destination airport must be specified.
 
 arguments:
     host_name
