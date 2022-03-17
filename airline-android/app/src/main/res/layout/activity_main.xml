@@ -6,14 +6,284 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/textView"
+    <EditText
+        android:id="@+id/airlineNameEntry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="23dp"
+        android:ems="10"
+        android:hint="Airline Name"
+        android:inputType="none|textPersonName"
+        android:minLines="0"
+        android:singleLine="true"
+        app:layout_constraintBottom_toTopOf="@+id/flightHeader"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.164"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/airlineHeading"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/airlineHeading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Airline Information"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.134"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/flightNumberEntry"
+        app:layout_constraintVertical_bias="0.0">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/departureHeading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Departure"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="122dp"
+                android:layout_height="145dp"
+                android:layout_marginHorizontal="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/departText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Flying from" />
+
+                <Spinner
+                    android:id="@+id/departAirportEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"
+                    android:textAlignment="center" />
+
+                <Button
+                    android:id="@+id/departDateButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="showDepartDatePicker"
+                    android:text="@string/setDateButton" />
+
+                <Button
+                    android:id="@+id/departTimeButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="showDepartTimePicker"
+                    android:text="@string/setTimeButton" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/arrivalHeading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Arrival"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="122dp"
+                android:layout_height="145dp"
+                android:layout_marginHorizontal="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/arriveText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Flying to" />
+
+                <Spinner
+                    android:id="@+id/arriveAirportEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dropdown"
+                    android:textAlignment="center" />
+
+                <Button
+                    android:id="@+id/arriveDateButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="showArriveDatePicker"
+                    android:text="@string/setDateButton" />
+
+                <Button
+                    android:id="@+id/arriveTimeButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="showArriveTimePicker"
+                    android:text="@string/setTimeButton" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/flightHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:text="Flight Information"
+        android:textAlignment="viewStart"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.13"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        app:flow_horizontalStyle="spread"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+        <View
+            android:id="@+id/divider8"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/createButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="CREATE"
+            android:onClick="createFlight" />
+
+        <View
+            android:id="@+id/divider6"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/searchButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="SEARCH"
+            android:onClick="searchFlights" />
+
+        <View
+            android:id="@+id/divider7"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/printButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="PRINT"
+            android:onClick="printFlights" />
+
+        <View
+            android:id="@+id/divider9"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/readmeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="README"
+        android:onClick="showReadme"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.023" />
+
+    <TableRow
+        android:layout_width="409dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="9dp"
+        android:layout_marginBottom="13dp"
+        android:background="#673AB7"
+        app:layout_constraintBottom_toTopOf="@+id/flightHeader"
+        app:layout_constraintTop_toBottomOf="@+id/airlineNameEntry"
+        tools:layout_editor_absoluteX="0dp">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="406dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="187dp"
+        android:background="#673AB7"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.176" />
+
+    <EditText
+        android:id="@+id/flightNumberEntry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:hint="Flight #"
+        android:inputType="number"
+        android:maxLength="6"
+        android:numeric="integer"
+        android:singleLine="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.164"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/flightHeader" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
